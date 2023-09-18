@@ -13,6 +13,32 @@ import {
   loadingController,
   toastController,
 } from "@ionic/vue";
+
+import { Preferences } from "@capacitor/preferences";
+import { onBeforeMount } from "vue";
+import {useRouter} from "vue-router";
+
+const router = useRouter()
+
+onBeforeMount(async () => {
+  const { value: token } = await Preferences.get({ key: "auth_token" });
+  const { value: oneId } = await Preferences.get({ key: "driverOneId" });
+
+  if (
+    (oneId === "undefined" && token === "undefined") ||
+    (!oneId && !token) ||
+    (oneId === "null" && token === "null")
+  ) {
+    await Preferences.remove({ key: "driverOneId" });
+    await Preferences.remove({ key: "auth_token" });
+
+    router.push("/register");
+
+    return {
+      status: "forbidden",
+    };
+  }
+});
 </script>
 
 <template>
