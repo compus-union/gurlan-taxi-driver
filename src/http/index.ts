@@ -1,5 +1,17 @@
 import axios from "axios";
+import config from "@/config";
+import { useLoading } from "@/stores/loading";
 
 export const authInstance = axios.create({
-  baseURL: "http://192.168.1.15:3000/api/v1",
+  baseURL: config.SERVER_URL,
 });
+
+authInstance.interceptors.request.use(
+  function (config) {
+    return config;
+  },
+  function (error) {
+    return Promise.reject(error);
+  }
+);
+

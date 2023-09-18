@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import AuthLayout from '@/layouts/AuthLayout.vue';
+import AuthLayout from "@/layouts/AuthLayout.vue";
 </script>
 
 <template>
-    <AuthLayout>
-        Auth layout 
-    </AuthLayout>
+  <AuthLayout> Auth layout </AuthLayout>
 </template>
