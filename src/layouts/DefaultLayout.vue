@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts">
 import {
   IonButton,
   IonButtons,
@@ -15,30 +15,39 @@ import {
 } from "@ionic/vue";
 
 import { Preferences } from "@capacitor/preferences";
-import { onBeforeMount } from "vue";
-import {useRouter} from "vue-router";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
+export default {
+  components: {
+    IonButton,
+    IonButtons,
+    IonContent,
+    IonHeader,
+    IonMenu,
+    IonMenuButton,
+    IonPage,
+    IonSplitPane,
+    IonTitle,
+    IonToolbar,
+  },
+  // async beforeCreate() {
+  //   const router = useRouter();
+  //   const { value: token } = await Preferences.get({ key: "auth_token" });
+  //   const { value: oneId } = await Preferences.get({ key: "driverOneId" });
 
-onBeforeMount(async () => {
-  const { value: token } = await Preferences.get({ key: "auth_token" });
-  const { value: oneId } = await Preferences.get({ key: "driverOneId" });
+  //   if (
+  //     (oneId === "undefined" && token === "undefined") ||
+  //     (!oneId && !token) ||  
+  //     (oneId === "null" && token === "null")
+  //   ) {
+  //     await Preferences.remove({ key: "driverOneId" });
+  //     await Preferences.remove({ key: "auth_token" });
 
-  if (
-    (oneId === "undefined" && token === "undefined") ||
-    (!oneId && !token) ||
-    (oneId === "null" && token === "null")
-  ) {
-    await Preferences.remove({ key: "driverOneId" });
-    await Preferences.remove({ key: "auth_token" });
-
-    router.push("/register");
-
-    return {
-      status: "forbidden",
-    };
-  }
-});
+  //     router.push("/register");
+  //     return;
+  //   }
+  // },
+};
 </script>
 
 <template>
