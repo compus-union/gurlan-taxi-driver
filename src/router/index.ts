@@ -27,7 +27,7 @@ const routes: Array<RouteRecordRaw> = [
         return next("/register");
       }
 
-      return next();
+      return next(); 
     },
   },
   {

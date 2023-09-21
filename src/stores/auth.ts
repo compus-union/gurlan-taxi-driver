@@ -77,7 +77,7 @@ export const useAuth = defineStore("auth-store", () => {
 
       if (response.data.status !== "bad") {
         // do here
-
+        
         return;
       }
     } catch (error: any) {
