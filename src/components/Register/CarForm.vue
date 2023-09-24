@@ -1,6 +1,24 @@
 <script setup lang="ts">
 import Message from "../UI/Message.vue";
 import { IonButton, IonText } from "@ionic/vue";
+import { useAuth } from "@/stores/auth";
+import { computed } from "vue";
+
+const authStore = useAuth();
+
+const disableButton = computed(() => {
+  if (authStore.car?.name && authStore.car?.number && authStore.car?.color) {
+    return false;
+  } else {
+    return true;
+  }
+});
+
+const vUppercase = {
+  updated: (el: any) => {
+    el.value = el.value.toUpperCase();
+  },
+};
 
 const events = defineEmits(["next", "back"]);
 </script>
@@ -14,16 +32,19 @@ const events = defineEmits(["next", "back"]);
         <div class="form-group flex flex-col items-start">
           <label class="mb-1" for="name">Rusumi</label>
           <input
+            v-model.trim="authStore.car.name"
             required
             class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
             type="text"
             placeholder="COBALT"
             id="name"
+            v-uppercase
           />
         </div>
         <div class="form-group flex flex-col items-start">
           <label class="mb-1" for="number">Raqami</label>
           <input
+            v-model.trim="authStore.car.number"
             required
             class="border rounded my-border w-full px-2 py-1 outline-none bg-transparent"
             type="text"
@@ -35,6 +56,7 @@ const events = defineEmits(["next", "back"]);
           <label class="mb-1" for="color">Rangi</label>
           <input
             required
+            v-model.trim="authStore.car.color"
             class="border rounded my-border w-full px-2 py-1 outline-none bg-transparent"
             type="text"
             placeholder="OQ"
@@ -42,6 +64,7 @@ const events = defineEmits(["next", "back"]);
           />
         </div>
         <IonButton
+          :disabled="disableButton"
           @click="events('next')"
           class="default-btn w-full font-bold uppercase"
           type="button"

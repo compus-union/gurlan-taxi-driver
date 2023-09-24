@@ -44,7 +44,11 @@ export const useAuth = defineStore("auth-store", () => {
     password: "",
     phone: ["+998"],
   });
-  const car = ref<Car>();
+  const car = ref<Car>({
+    name: "",
+    color: "",
+    number: "",
+  }); 
 
   const router = useRouter();
 
