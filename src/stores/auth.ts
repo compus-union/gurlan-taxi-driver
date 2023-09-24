@@ -39,7 +39,11 @@ interface Car {
 }
 
 export const useAuth = defineStore("auth-store", () => {
-  const driver = ref<Driver>();
+  const driver = ref<Driver>({
+    fullname: "",
+    password: "",
+    phone: ["+998"],
+  });
   const car = ref<Car>();
 
   const router = useRouter();
@@ -77,7 +81,7 @@ export const useAuth = defineStore("auth-store", () => {
 
       if (response.data.status !== "bad") {
         // do here
-        
+
         return;
       }
     } catch (error: any) {
@@ -160,5 +164,5 @@ export const useAuth = defineStore("auth-store", () => {
     }
   }
 
-  return { register };
+  return { register, driver, car };
 });
