@@ -3,6 +3,7 @@ import Message from "../UI/Message.vue";
 import { IonButton, IonText } from "@ionic/vue";
 import { useAuth } from "@/stores/auth";
 import { computed } from "vue";
+import { vUppercase } from "@/directives/uppercase";
 
 const authStore = useAuth();
 
@@ -13,12 +14,6 @@ const disableButton = computed(() => {
     return true;
   }
 });
-
-const vUppercase = {
-  updated: (el: any) => {
-    el.value = el.value.toUpperCase();
-  },
-};
 
 const events = defineEmits(["next", "back"]);
 </script>
@@ -50,6 +45,7 @@ const events = defineEmits(["next", "back"]);
             type="text"
             placeholder="90 A 999 AA"
             id="number"
+            v-uppercase
           />
         </div>
         <div class="form-group flex flex-col items-start">
@@ -61,6 +57,7 @@ const events = defineEmits(["next", "back"]);
             type="text"
             placeholder="OQ"
             id="color"
+            v-uppercase
           />
         </div>
         <IonButton
