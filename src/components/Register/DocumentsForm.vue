@@ -2,14 +2,62 @@
 import Message from "../UI/Message.vue";
 import { IonButton, IonIcon, IonText } from "@ionic/vue";
 import { folderOpenOutline } from "ionicons/icons";
-import { ref } from "vue";
+import { useAuth } from "@/stores/auth";
+import { computed, ref } from "vue";
+import axios from "axios";
+const formData = new FormData();
+
+interface MyFile extends File {
+  givenName: string;
+}
 
 const events = defineEmits(["next", "back"]);
+const authStore = useAuth();
+
+const files = ref<File[]>([]);
 
 const pravaFront = ref<HTMLInputElement>();
 const pravaBack = ref<HTMLInputElement>();
 const texFront = ref<HTMLInputElement>();
 const texBack = ref<HTMLInputElement>();
+
+const pravaFrontImg = computed(() => {
+  console.log(pravaFront.value);
+  
+  if (pravaFront.value) {
+    if (pravaFront.value.files) {
+      return pravaFront.value.files[0] ? true : false;
+    }
+  }
+});
+const pravaBackImg = computed(() => {
+  if (pravaBack.value) {
+    if (pravaBack.value.files) {
+      return pravaBack.value.files[0] ? true : false;
+    }
+  }
+});
+const texFrontImg = computed(() => {
+  if (texFront.value) {
+    if (texFront.value.files) {
+      return texFront.value.files[0] ? true : false;
+    }
+  }
+});
+const texBackImg = computed(() => {
+  if (texBack.value) {
+    if (texBack.value.files) {
+      return texBack.value.files[0] ? true : false;
+    }
+  }
+});
+
+const pushFile = (file: File) => {
+  files.value.push(file);
+  console.log(pravaFrontImg.value);
+  
+  return;
+};
 </script>
 
 <template>
@@ -35,8 +83,15 @@ const texBack = ref<HTMLInputElement>();
                 :icon="folderOpenOutline"
               ></IonIcon>
               Old tomon
+              <p v-if="pravaFrontImg">Rasm tanlandi</p>
             </IonButton>
-            <input hidden ref="pravaFront" type="file" accept=".png, .jpg" />
+            <input
+              @change="(e:any) => pushFile(e.target.files[0])"
+              hidden
+              ref="pravaFront"
+              type="file"
+              accept=".png, .jpg"
+            />
           </div>
           <div class="back">
             <IonButton
@@ -51,7 +106,13 @@ const texBack = ref<HTMLInputElement>();
               ></IonIcon>
               Orqa tomon
             </IonButton>
-            <input hidden ref="pravaBack" type="file" accept=".png, .jpg" />
+            <input
+              @change="(e:any) => pushFile(e.target.files[0])"
+              hidden
+              ref="pravaBack"
+              type="file"
+              accept=".png, .jpg"
+            />
           </div>
         </div>
       </div>
@@ -71,10 +132,20 @@ const texBack = ref<HTMLInputElement>();
               ></IonIcon>
               Old tomon
             </IonButton>
-            <input hidden ref="texFront" type="file" accept=".png, .jpg" />
+            <input
+              @change="(e:any) => pushFile(e.target.files[0])"
+              hidden
+              ref="texFront"
+              type="file"
+              accept=".png, .jpg"
+            />
           </div>
           <div class="back">
-            <IonButton @click="() => texBack?.click()" class="font-semibold" color="light">
+            <IonButton
+              @click="() => texBack?.click()"
+              class="font-semibold"
+              color="light"
+            >
               <IonIcon
                 class="mr-3"
                 slot="start"
@@ -82,7 +153,13 @@ const texBack = ref<HTMLInputElement>();
               ></IonIcon>
               Orqa tomon
             </IonButton>
-            <input hidden ref="texBack" type="file" accept=".png, .jpg" />
+            <input
+              @change="(e:any) => pushFile(e.target.files[0])"
+              hidden
+              ref="texBack"
+              type="file"
+              accept=".png, .jpg"
+            />
           </div>
         </div>
       </div>

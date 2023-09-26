@@ -48,13 +48,14 @@ export const useAuth = defineStore("auth-store", () => {
     name: "",
     color: "",
     number: "",
-  }); 
+  });
 
   const router = useRouter();
 
   async function register(payload: {
     driver: Driver;
     car: Car;
+    files: any;
   }): Promise<void> {
     try {
       const response = await authInstance.post("/register", { ...payload });
