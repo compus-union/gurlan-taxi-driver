@@ -5,7 +5,7 @@ import { useLoading } from "@/stores/loading";
 const loadingStore = useLoading();
 
 export const authInstance = axios.create({
-  baseURL: config.SERVER_URL,
+  baseURL: config.SERVER_URL + "/driver",
 });
 
 authInstance.interceptors.request.use(

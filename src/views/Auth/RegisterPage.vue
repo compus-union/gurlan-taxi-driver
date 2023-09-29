@@ -15,7 +15,7 @@ const DocumentsForm = defineAsyncComponent(() => {
   return import("@/components/Register/DocumentsForm.vue");
 });
 
-const step = ref(3);
+const step = ref(1);
 
 const addStep = () => {
   if (step.value === 3) {

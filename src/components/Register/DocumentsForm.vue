@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import Message from "../UI/Message.vue";
-import { IonButton, IonIcon, IonText } from "@ionic/vue";
+import {
+  IonButton,
+  IonIcon,
+  IonText,
+  loadingController,
+  toastController,
+} from "@ionic/vue";
 import { folderOpenOutline } from "ionicons/icons";
 import { useAuth } from "@/stores/auth";
 import { computed, ref } from "vue";
-import axios from "axios";
-const formData = new FormData();
+import { useLoading } from "@/stores/loading";
+import { useRouter } from "vue-router";
 
-interface MyFile extends File {
-  givenName: string;
-}
+const router = useRouter();
+const loadingStore = useLoading();
+const formData = new FormData();
 
 const events = defineEmits(["next", "back"]);
 const authStore = useAuth();
@@ -21,43 +27,166 @@ const pravaBack = ref<HTMLInputElement>();
 const texFront = ref<HTMLInputElement>();
 const texBack = ref<HTMLInputElement>();
 
-const pravaFrontImg = computed(() => {
-  console.log(pravaFront.value);
-  
-  if (pravaFront.value) {
-    if (pravaFront.value.files) {
-      return pravaFront.value.files[0] ? true : false;
-    }
-  }
-});
-const pravaBackImg = computed(() => {
-  if (pravaBack.value) {
-    if (pravaBack.value.files) {
-      return pravaBack.value.files[0] ? true : false;
-    }
-  }
-});
-const texFrontImg = computed(() => {
-  if (texFront.value) {
-    if (texFront.value.files) {
-      return texFront.value.files[0] ? true : false;
-    }
-  }
-});
-const texBackImg = computed(() => {
-  if (texBack.value) {
-    if (texBack.value.files) {
-      return texBack.value.files[0] ? true : false;
-    }
-  }
-});
+const pravaFrontImg = ref<boolean>(false);
+const pravaBackImg = ref<boolean>(false);
+const texFrontImg = ref<boolean>(false);
+const texBackImg = ref<boolean>(false);
 
-const pushFile = (file: File) => {
+const pushFile = (
+  file: File,
+  name: "pFront" | "pBack" | "tFront" | "tBack"
+) => {
+  if (name === "pFront") {
+    pravaFrontImg.value = true;
+  }
+
+  if (name === "pBack") {
+    pravaBackImg.value = true;
+  }
+
+  if (name === "tFront") {
+    texFrontImg.value = true;
+  }
+
+  if (name === "tBack") {
+    texBackImg.value = true;
+  }
+
   files.value.push(file);
-  console.log(pravaFrontImg.value);
-  
+  formData.append("images", file);
+
   return;
 };
+
+const action = async () => {
+  const loading = await loadingController.create({
+    message: "Ma'lumotlaringiz jo'natilmoqda",
+  });
+
+  await loading.present();
+  try {
+    const result = await authStore.register({
+      driver: authStore.driver,
+      car: authStore.car,
+      files: formData,
+    });
+
+    if (result.status === "bad") {
+      await loading.dismiss();
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            role: "cancel",
+            handler: async () => {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
+
+      return;
+    }
+
+    if (result.status === "ok") {
+      await loading.dismiss();
+
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            role: "cancel",
+            handler: async () => {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
+
+      router.push("/validation-waiting");
+
+      return;
+    }
+
+    if (result.status === "unknown") {
+      await loading.dismiss();
+
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            role: "cancel",
+            handler: async () => {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
+
+      return;
+    }
+  } catch (error: any) {
+    await loading.dismiss();
+
+    if (!error.response) {
+      const toast = await toastController.create({
+        message: "Internetingiz bilan aloqa mavjudligini tekshirib ko'ring",
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            role: "cancel",
+            handler: async () => {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
+
+      return;
+    }
+    const toast = await toastController.create({
+      message: error.message,
+      duration: 4000,
+      buttons: [
+        {
+          text: "OK",
+          role: "cancel",
+          handler: async () => {
+            await toast.dismiss();
+          },
+        },
+      ],
+    });
+
+    await toast.present();
+    return;
+  } finally {
+    await loading.dismiss()
+  }
+};
+
+const disableButton = computed(() => {
+  if (loadingStore.loading) {
+    return true;
+  } else {
+    return files.value.length !== 4 ? true : false;
+  }
+});
 </script>
 
 <template>
@@ -83,10 +212,10 @@ const pushFile = (file: File) => {
                 :icon="folderOpenOutline"
               ></IonIcon>
               Old tomon
-              <p v-if="pravaFrontImg">Rasm tanlandi</p>
             </IonButton>
+            <p class="text-sm opacity-50" v-if="pravaFrontImg">Rasm tanlandi</p>
             <input
-              @change="(e:any) => pushFile(e.target.files[0])"
+              @change="(e:any) => pushFile(e.target.files[0], 'pFront')"
               hidden
               ref="pravaFront"
               type="file"
@@ -106,8 +235,9 @@ const pushFile = (file: File) => {
               ></IonIcon>
               Orqa tomon
             </IonButton>
+            <p class="text-sm opacity-50" v-if="pravaBackImg">Rasm tanlandi</p>
             <input
-              @change="(e:any) => pushFile(e.target.files[0])"
+              @change="(e:any) => pushFile(e.target.files[0], 'pBack')"
               hidden
               ref="pravaBack"
               type="file"
@@ -132,8 +262,9 @@ const pushFile = (file: File) => {
               ></IonIcon>
               Old tomon
             </IonButton>
+            <p class="text-sm opacity-50" v-if="texFrontImg">Rasm tanlandi</p>
             <input
-              @change="(e:any) => pushFile(e.target.files[0])"
+              @change="(e:any) => pushFile(e.target.files[0], 'tFront')"
               hidden
               ref="texFront"
               type="file"
@@ -153,8 +284,9 @@ const pushFile = (file: File) => {
               ></IonIcon>
               Orqa tomon
             </IonButton>
+            <p class="text-sm opacity-50" v-if="texBackImg">Rasm tanlandi</p>
             <input
-              @change="(e:any) => pushFile(e.target.files[0])"
+              @change="(e:any) => pushFile(e.target.files[0], 'tBack')"
               hidden
               ref="texBack"
               type="file"
@@ -164,7 +296,12 @@ const pushFile = (file: File) => {
         </div>
       </div>
       <div class="buttons">
-        <IonButton class="default-btn w-full font-bold uppercase" type="button"
+        <IonButton
+          id="loading-trigger"
+          :disabled="disableButton"
+          @click="action"
+          class="default-btn w-full font-bold uppercase"
+          type="button"
           >Jo'natish
         </IonButton>
         <IonButton
