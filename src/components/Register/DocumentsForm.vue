@@ -11,9 +11,9 @@ import { folderOpenOutline } from "ionicons/icons";
 import { useAuth } from "@/stores/auth";
 import { computed, ref } from "vue";
 import { useLoading } from "@/stores/loading";
-import { useRouter } from "vue-router";
+import router from "@/router";
+import { authInstance } from "@/http";
 
-const router = useRouter();
 const loadingStore = useLoading();
 const formData = new FormData();
 
@@ -93,6 +93,64 @@ const action = async () => {
     }
 
     if (result.status === "ok") {
+      const sendingPictures = await authInstance.post(
+        `/send-images/${result.oneId}/${authStore.plainPass}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${authStore.token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (!sendingPictures) {
+        await loading.dismiss();
+
+        const warningToast = await toastController.create({
+          message:
+            "Rasmlarni yuborishda muammo. Internetingizni tekshirib boshqatdan urinib ko'ring.",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              role: "cancel",
+              handler: async () => {
+                await warningToast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await warningToast.present();
+
+        return;
+      }
+
+      if (sendingPictures.data.status !== "ok") {
+        await loading.dismiss();
+
+        const warningToast = await toastController.create({
+          message:
+            sendingPictures.data.msg ||
+            "Rasmlarni yuborishda muammo. Boshqatdan urinib ko'ring",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              role: "cancel",
+              handler: async () => {
+                await warningToast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await warningToast.present();
+
+        return;
+      }
+
       await loading.dismiss();
 
       const toast = await toastController.create({
@@ -111,7 +169,9 @@ const action = async () => {
 
       await toast.present();
 
-      router.push("/validation-waiting");
+      setTimeout(() => {
+        router.push("/validation-waiting");
+      }, 500);
 
       return;
     }
@@ -176,7 +236,7 @@ const action = async () => {
     await toast.present();
     return;
   } finally {
-    await loading.dismiss()
+    await loading.dismiss();
   }
 };
 

@@ -4,7 +4,7 @@ import { StatusDriver, DriverTypes, StatusLicenseDocuments } from "@/constants";
 import { authInstance } from "@/http";
 import { Preferences } from "@capacitor/preferences";
 import { useLoading } from "./loading";
-import { toastController } from "@ionic/vue";
+import { loadingController, toastController } from "@ionic/vue";
 import { useRouter } from "vue-router";
 
 interface Driver {
@@ -53,6 +53,8 @@ export const useAuth = defineStore("auth-store", () => {
     color: "",
     number: "",
   });
+  const plainPass = ref("");
+  const token = ref("");
 
   const getDriver = computed(() => {
     return driver.value;
@@ -78,13 +80,26 @@ export const useAuth = defineStore("auth-store", () => {
     car.value = payload;
   }
 
+  async function setToken(payload: string) {
+    token.value = payload;
+  }
+
+  function setTokenSync(payload: string) {
+    token.value = payload;
+  }
+
   async function register(payload: {
     driver: Driver;
     car: Car;
     files: FormData;
-  }): Promise<{ status: "ok" | "bad" | "unknown"; msg: string }> {
+  }): Promise<{
+    status: "ok" | "bad" | "unknown";
+    msg: string;
+    [propName: string]: any;
+  }> {
     try {
       await loadingStore.setLoading(true);
+      plainPass.value = driver.value.password;
       // const
       const sendingDriverInfo = await authInstance.post("/register", {
         driver: payload.driver,
@@ -121,11 +136,14 @@ export const useAuth = defineStore("auth-store", () => {
           }),
           setDriver(sendingDriverInfo.data.driver as Driver),
           setCar(sendingDriverInfo.data.car as Car),
+          setToken(sendingDriverInfo.data.token),
         ]);
 
         return {
           msg: sendingDriverInfo.data.msg,
           status: "ok",
+          oneId: sendingDriverInfo.data.driver.oneId,
+          password: driver.value.password,
         };
       }
 
@@ -213,6 +231,7 @@ export const useAuth = defineStore("auth-store", () => {
           Preferences.set({ key: "auth_token", value: res.data.token }),
           setDriver(res.data.driver),
           setCar(res.data.car),
+          setToken(res.data.token),
         ]);
 
         return;
@@ -235,5 +254,127 @@ export const useAuth = defineStore("auth-store", () => {
     }
   }
 
-  return { register, driver, car, getDriver, getCar, checkIfExists };
+  async function checkIfValidated(payload: {
+    token: string | null;
+    oneId: string | null;
+  }) {
+    await loadingStore.setLoading(true);
+
+    const loading = await loadingController.create({
+      message: "Tekshirilmoqda...",
+    });
+
+    await loading.present();
+    try {
+      const res = await authInstance.get(
+        `/check-validation/${payload.oneId}`,
+        {
+          headers: { Authorization: `Bearer ${payload.token}` },
+        }
+      );
+      if (!res) {
+        await loading.dismiss()
+        const toast = await toastController.create({
+          message: "Nimadir xato ketdi, internetingizni tekshiring.",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              handler: async () => {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
+
+        return;
+      }
+
+      if (res.data.status === "forbidden" || res.data.status === "bad") {
+        await loading.dismiss()
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              handler: async () => {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
+        return;
+      }
+
+      if (res.data.status === "ok") {
+        await loading.dismiss()
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              handler: async () => {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
+
+        await Promise.allSettled([
+          Preferences.set({ key: "validation", value: "validated" }),
+          Preferences.set({ key: "auth_token", value: res.data.token }),
+          Preferences.set({ key: "driverOneId", value: res.data.driver.oneId }),
+        ]);
+        setTimeout(() => {
+          router.push("/home");
+        }, 500);
+        return;
+      }
+    } catch (error: any) {
+      console.log(error);
+      
+      await loading.dismiss();
+      const newToast = await toastController.create({
+        message:
+          error.message ||
+          error.response.data.msg ||
+          "Serverda xatolik, yoki internet bilan aloqa mavjud emas.",
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await newToast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await newToast.present();
+    } finally {
+      await loadingStore.setLoading(false)
+    }
+  }
+
+  return {
+    register,
+    driver,
+    car,
+    getDriver,
+    getCar,
+    checkIfExists,
+    plainPass,
+    token,
+    checkIfValidated,
+  };
 });
