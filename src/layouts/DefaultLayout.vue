@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts">
 import {
   IonButton,
   IonButtons,
@@ -13,6 +13,24 @@ import {
   loadingController,
   toastController,
 } from "@ionic/vue";
+
+import { Preferences } from "@capacitor/preferences";
+import { useRouter } from "vue-router";
+
+export default {
+  components: {
+    IonButton,
+    IonButtons,
+    IonContent,
+    IonHeader,
+    IonMenu,
+    IonMenuButton,
+    IonPage,
+    IonSplitPane,
+    IonTitle,
+    IonToolbar,
+  },
+};
 </script>
 
 <template>
