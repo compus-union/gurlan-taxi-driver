@@ -4,6 +4,6 @@ import AuthLayout from "@/layouts/AuthLayout.vue";
 
 <template>
   <AuthLayout>
-    <div>Get the hell out of here</div>
+    <div>You are banned</div>
   </AuthLayout>
 </template>

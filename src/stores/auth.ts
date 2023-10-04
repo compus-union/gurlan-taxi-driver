@@ -6,6 +6,8 @@ import { Preferences } from "@capacitor/preferences";
 import { useLoading } from "./loading";
 import { loadingController, toastController } from "@ionic/vue";
 import { useRouter } from "vue-router";
+import { DriverResponseStatus } from "@/constants";
+import { UniversalResponseStatus } from "@/constants";
 
 interface Driver {
   id?: string;
@@ -93,14 +95,14 @@ export const useAuth = defineStore("auth-store", () => {
     car: Car;
     files: FormData;
   }): Promise<{
-    status: "ok" | "bad" | "unknown";
+    status: UniversalResponseStatus | DriverResponseStatus;
     msg: string;
     [propName: string]: any;
   }> {
     try {
       await loadingStore.setLoading(true);
       plainPass.value = driver.value.password;
-      // const
+
       const sendingDriverInfo = await authInstance.post("/register", {
         driver: payload.driver,
         car: payload.car,
@@ -109,18 +111,20 @@ export const useAuth = defineStore("auth-store", () => {
       if (!sendingDriverInfo) {
         return {
           msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
-          status: "bad",
+          status: UniversalResponseStatus.ERR_NETWORK,
         };
       }
 
-      if (sendingDriverInfo.data.status === "bad") {
+      if (sendingDriverInfo.data.status === DriverResponseStatus.AUTH_WARNING) {
         return {
           msg: sendingDriverInfo.data.msg,
-          status: "bad",
+          status: DriverResponseStatus.AUTH_WARNING,
         };
       }
 
-      if (sendingDriverInfo.data.status === "ok") {
+      if (
+        sendingDriverInfo.data.status === DriverResponseStatus.REGISTRATION_DONE
+      ) {
         await Promise.allSettled([
           Preferences.set({
             key: "auth_token",
@@ -141,116 +145,30 @@ export const useAuth = defineStore("auth-store", () => {
 
         return {
           msg: sendingDriverInfo.data.msg,
-          status: "ok",
+          status: DriverResponseStatus.REGISTRATION_DONE,
           oneId: sendingDriverInfo.data.driver.oneId,
           password: driver.value.password,
         };
       }
 
       return {
-        status: "unknown",
+        status: DriverResponseStatus.UNKNOWN_ERR,
         msg: "Something just happened",
       };
     } catch (error: any) {
       if (!error.response) {
         return {
-          status: "bad",
+          status: UniversalResponseStatus.ERR_NETWORK,
           msg: "Internetingizni tekshirib boshqatdan urinib ko'ring",
         };
       }
 
       return {
-        status: "bad",
+        status: DriverResponseStatus.UNKNOWN_ERR,
         msg: error.message,
       };
     } finally {
       await loadingStore.setLoading(false);
-    }
-  }
-
-  async function login(payload: {
-    oneId: string;
-    password: string;
-  }): Promise<void> {}
-
-  async function checkIfExists(payload: {
-    token: string | null;
-    oneId: string | null;
-  }) {
-    try {
-      const res = await authInstance.get("/check/" + payload.oneId, {
-        headers: {
-          Authorization: `Bearer ${payload.token}`,
-        },
-      });
-
-      if (!res) {
-        const toast = await toastController.create({
-          message: "Nimadir xato ketdi, internetingizni tekshiring.",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              handler: async () => {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
-
-        return;
-      }
-
-      if (res.data.status === "forbidden" || res.data.status === "bad") {
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              handler: async () => {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
-        await Promise.allSettled([Preferences.clear()]);
-        await router.push("/register");
-        return;
-      }
-
-      if (res.data.status === "ok") {
-        await Promise.allSettled([
-          Preferences.clear(),
-          Preferences.set({ key: "validation", value: "waiting" }),
-          Preferences.set({ key: "driverOneId", value: res.data.driver.oneId }),
-          Preferences.set({ key: "auth_token", value: res.data.token }),
-          setDriver(res.data.driver),
-          setCar(res.data.car),
-          setToken(res.data.token),
-        ]);
-
-        return;
-      }
-    } catch (error: any) {
-      const toast = await toastController.create({
-        message: error.message || "Nimadir xato ketdi",
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await toast.dismiss();
-            },
-          },
-        ],
-        duration: 4000,
-      });
-
-      await toast.present();
     }
   }
 
@@ -266,14 +184,11 @@ export const useAuth = defineStore("auth-store", () => {
 
     await loading.present();
     try {
-      const res = await authInstance.get(
-        `/check-validation/${payload.oneId}`,
-        {
-          headers: { Authorization: `Bearer ${payload.token}` },
-        }
-      );
+      const res = await authInstance.get(`/check-validation/${payload.oneId}`, {
+        headers: { Authorization: `Bearer ${payload.token}` },
+      });
       if (!res) {
-        await loading.dismiss()
+        await loading.dismiss();
         const toast = await toastController.create({
           message: "Nimadir xato ketdi, internetingizni tekshiring.",
           duration: 4000,
@@ -292,8 +207,8 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === "forbidden" || res.data.status === "bad") {
-        await loading.dismiss()
+      if (res.data.status === DriverResponseStatus.VALIDATION_WAITING) {
+        await loading.dismiss();
 
         const toast = await toastController.create({
           message: res.data.msg,
@@ -309,11 +224,84 @@ export const useAuth = defineStore("auth-store", () => {
         });
 
         await toast.present();
+
+        await Promise.allSettled([
+          Preferences.set({ key: "validation", value: "waiting" }),
+          Preferences.set({ key: "auth_token", value: res.data.token }),
+        ]);
+
+        if (router.currentRoute.value.fullPath === "/validation-waiting") {
+          return;
+        }
+        
+        await router.push("/validation-waiting");
         return;
       }
 
-      if (res.data.status === "ok") {
-        await loading.dismiss()
+      if (
+        res.data.status === DriverResponseStatus.DRIVER_NOT_FOUND ||
+        res.data.status === DriverResponseStatus.HEADERS_NOT_FOUND ||
+        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
+        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_VALID
+      ) {
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              handler: async () => {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await Promise.allSettled([
+          Preferences.clear(),
+          router.push("/register"),
+        ]);
+
+        await toast.present();
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.DRIVER_BANNED) {
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              handler: async () => {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
+
+        await Promise.allSettled([
+          Preferences.clear(),
+          Preferences.set({ key: "banned", value: "true" }),
+        ]);
+
+        if (router.currentRoute.value.fullPath === "/banned") {
+          return;
+        }
+
+        await router.push("/banned");
+
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.VALIDATION_DONE) {
+        await loading.dismiss();
 
         const toast = await toastController.create({
           message: res.data.msg,
@@ -342,7 +330,7 @@ export const useAuth = defineStore("auth-store", () => {
       }
     } catch (error: any) {
       console.log(error);
-      
+
       await loading.dismiss();
       const newToast = await toastController.create({
         message:
@@ -362,7 +350,7 @@ export const useAuth = defineStore("auth-store", () => {
 
       await newToast.present();
     } finally {
-      await loadingStore.setLoading(false)
+      await loadingStore.setLoading(false);
     }
   }
 
@@ -372,7 +360,6 @@ export const useAuth = defineStore("auth-store", () => {
     car,
     getDriver,
     getCar,
-    checkIfExists,
     plainPass,
     token,
     checkIfValidated,
