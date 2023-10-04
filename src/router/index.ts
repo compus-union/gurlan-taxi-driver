@@ -1,6 +1,7 @@
 import { Preferences } from "@capacitor/preferences";
 import { createRouter, createWebHistory } from "@ionic/vue-router";
 import { RouteRecordRaw } from "vue-router";
+import { DriverValidation } from "@/constants";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -18,28 +19,26 @@ const routes: Array<RouteRecordRaw> = [
       const { value: validation } = await Preferences.get({
         key: "validation",
       });
+      const { value: banned } = await Preferences.get({ key: "banned" });
 
-      if (
-        (oneId === "undefined" && token === "undefined") ||
-        (!oneId && !token) ||
-        (oneId === "null" && token === "null")
-      ) {
-        await Preferences.remove({ key: "driverOneId" });
-        await Preferences.remove({ key: "auth_token" });
-
+      if (!validation && !oneId && !token && !banned) {
         return next("/register");
       }
 
-      if (validation === "waiting") {
+      if (validation === DriverValidation.WAITING && oneId && token) {
         return next("/validation-waiting");
       }
 
-      if (validation === "validated") {
+      if (validation === DriverValidation.INVALIDATED && oneId && token) {
+        return next("/invalidation");
+      }
+
+      if (validation === DriverValidation.VALIDATED && oneId && token) {
         return next("/login");
       }
 
-      if (validation === "invalidated") {
-        return next("/invalidation");
+      if (!validation && oneId && token && banned === "true") {
+        return next("/banned");
       }
 
       return next();
@@ -55,31 +54,29 @@ const routes: Array<RouteRecordRaw> = [
       const { value: validation } = await Preferences.get({
         key: "validation",
       });
+      const { value: banned } = await Preferences.get({ key: "banned" });
 
-      if (
-        (oneId === "undefined" && token === "undefined") ||
-        (!oneId && !token) ||
-        (oneId === "null" && token === "null")
-      ) {
-        await Preferences.remove({ key: "driverOneId" });
-        await Preferences.remove({ key: "auth_token" });
-
-        return next();
+      if (validation === DriverValidation.SUCCESS && oneId && token) {
+        return next("/home");
       }
 
-      if (validation === "waiting") {
+      if (validation === DriverValidation.WAITING && oneId && token) {
         return next("/validation-waiting");
       }
 
-      if (validation === "validated") {
-        return next("/login");
-      }
-
-      if (validation === "invalidated") {
+      if (validation === DriverValidation.INVALIDATED && oneId && token) {
         return next("/invalidation");
       }
 
-      return next("/home");
+      if (validation === DriverValidation.VALIDATED && oneId && token) {
+        return next("/login");
+      }
+
+      if (!validation && oneId && token && banned === "true") {
+        return next("/banned");
+      }
+
+      return next();
     },
   },
   {
@@ -92,31 +89,29 @@ const routes: Array<RouteRecordRaw> = [
       const { value: validation } = await Preferences.get({
         key: "validation",
       });
+      const { value: banned } = await Preferences.get({ key: "banned" });
 
-      if (
-        (oneId === "undefined" && token === "undefined") ||
-        (!oneId && !token) ||
-        (oneId === "null" && token === "null")
-      ) {
-        await Preferences.remove({ key: "driverOneId" });
-        await Preferences.remove({ key: "auth_token" });
-
+      if (!token && !oneId && !validation && !banned) {
         return next("/register");
       }
 
-      if (validation === "waiting") {
+      if (validation === DriverValidation.SUCCESS && oneId && token) {
+        return next("/home");
+      }
+
+      if (validation === DriverValidation.WAITING && oneId && token) {
         return next("/validation-waiting");
       }
 
-      if (validation === "invalidated") {
+      if (validation === DriverValidation.INVALIDATED && oneId && token) {
         return next("/invalidation");
       }
 
-      if (validation === "validated") {
-        return next();
+      if (!validation && oneId && token && banned === "true") {
+        return next("/banned");
       }
 
-      return next("/home");
+      return next();
     },
   },
   {
@@ -129,31 +124,29 @@ const routes: Array<RouteRecordRaw> = [
       const { value: validation } = await Preferences.get({
         key: "validation",
       });
+      const { value: banned } = await Preferences.get({ key: "banned" });
 
-      if (
-        (oneId === "undefined" && token === "undefined") ||
-        (!oneId && !token) ||
-        (oneId === "null" && token === "null")
-      ) {
-        await Preferences.remove({ key: "driverOneId" });
-        await Preferences.remove({ key: "auth_token" });
-
+      if (!token && !oneId && !validation && !banned) {
         return next("/register");
       }
 
-      if (validation === "invalidated") {
-        return next("/invalidation");
+      if (validation === DriverValidation.SUCCESS && oneId && token) {
+        return next("/home");
       }
 
-      if (validation === "validated") {
+      if (validation === DriverValidation.VALIDATED && oneId && token) {
         return next("/login");
       }
 
-      if (validation === "waiting") {
-        return next();
+      if (validation === DriverValidation.INVALIDATED && oneId && token) {
+        return next("/invalidation");
       }
 
-      return next("/home");
+      if (!validation && oneId && token && banned === "true") {
+        return next("/banned");
+      }
+
+      return next();
     },
   },
   {
@@ -166,31 +159,64 @@ const routes: Array<RouteRecordRaw> = [
       const { value: validation } = await Preferences.get({
         key: "validation",
       });
+      const { value: banned } = await Preferences.get({ key: "banned" });
 
-      if (
-        (oneId === "undefined" && token === "undefined") ||
-        (!oneId && !token) ||
-        (oneId === "null" && token === "null")
-      ) {
-        await Preferences.remove({ key: "driverOneId" });
-        await Preferences.remove({ key: "auth_token" });
-
+      if (!token && !oneId && !validation && !banned) {
         return next("/register");
       }
 
-      if (validation === "validated") {
-        return next("/login");
+      if (validation === DriverValidation.SUCCESS && oneId && token) {
+        return next("/home");
       }
 
-      if (validation === "waiting") {
+      if (validation === DriverValidation.WAITING && oneId && token) {
         return next("/validation-waiting");
       }
 
-      if (validation === "invalidated") {
-        return next();
+      if (validation === DriverValidation.VALIDATED && oneId && token) {
+        return next("/login");
       }
 
-      return next("/home");
+      if (!validation && oneId && token && banned === "true") {
+        return next("/banned");
+      }
+
+      return next();
+    },
+  },
+  {
+    path: "/banned",
+    name: "banned-page",
+    component: () => import("@/views/Auth/BannedPage.vue"),
+    async beforeEnter(to, from, next) {
+      const { value: token } = await Preferences.get({ key: "auth_token" });
+      const { value: oneId } = await Preferences.get({ key: "driverOneId" });
+      const { value: validation } = await Preferences.get({
+        key: "validation",
+      });
+      const { value: banned } = await Preferences.get({ key: "banned" });
+
+      if (!token && !oneId && !validation && !banned) {
+        return next("/register");
+      }
+
+      if (validation === DriverValidation.SUCCESS && oneId && token) {
+        return next("/home");
+      }
+
+      if (validation === DriverValidation.WAITING && oneId && token) {
+        return next("/validation-waiting");
+      }
+
+      if (validation === DriverValidation.INVALIDATED && oneId && token) {
+        return next("/invalidation");
+      }
+
+      if (validation === DriverValidation.VALIDATED && oneId && token) {
+        return next("/login");
+      }
+
+      return next();
     },
   },
 ];
