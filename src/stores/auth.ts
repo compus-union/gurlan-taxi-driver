@@ -57,6 +57,7 @@ export const useAuth = defineStore("auth-store", () => {
   });
   const plainPass = ref("");
   const token = ref("");
+  const bannedReason = ref("")
 
   const getDriver = computed(() => {
     return driver.value;
@@ -363,5 +364,6 @@ export const useAuth = defineStore("auth-store", () => {
     plainPass,
     token,
     checkIfValidated,
+    bannedReason
   };
 });
