@@ -104,3 +104,4 @@ const events = defineEmits(["next", "back"]);
   }
 }
 </style>
+@/stores/auth/auth

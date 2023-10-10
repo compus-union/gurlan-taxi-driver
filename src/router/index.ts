@@ -37,7 +37,7 @@ const routes: Array<RouteRecordRaw> = [
         return next("/login");
       }
 
-      if (!validation && !oneId && !token && banned === "true") {
+      if (!validation && banned === "true") {
         return next("/banned");
       }
 
@@ -72,7 +72,7 @@ const routes: Array<RouteRecordRaw> = [
         return next("/login");
       }
 
-      if (!validation && !oneId && !token && banned === "true") {
+      if (!validation && banned === "true") {
         return next("/banned");
       }
 
@@ -107,7 +107,7 @@ const routes: Array<RouteRecordRaw> = [
         return next("/invalidation");
       }
 
-      if (!validation && !oneId && !token && banned === "true") {
+      if (!validation && banned === "true") {
         return next("/banned");
       }
 
@@ -142,7 +142,7 @@ const routes: Array<RouteRecordRaw> = [
         return next("/invalidation");
       }
 
-      if (!validation && !oneId && !token && banned === "true") {
+      if (!validation && banned === "true") {
         return next("/banned");
       }
 
@@ -177,7 +177,7 @@ const routes: Array<RouteRecordRaw> = [
         return next("/login");
       }
 
-      if (!validation && !oneId && !token && banned === "true") {
+      if (!validation && banned === "true") {
         return next("/banned");
       }
 

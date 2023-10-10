@@ -1,6 +1,11 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
-import { StatusDriver, DriverTypes, StatusLicenseDocuments } from "@/constants";
+import {
+  StatusDriver,
+  DriverTypes,
+  StatusLicenseDocuments,
+  DriverValidation,
+} from "@/constants";
 import { authInstance } from "@/http";
 import { Preferences } from "@capacitor/preferences";
 import { useLoading } from "./loading";
@@ -57,7 +62,7 @@ export const useAuth = defineStore("auth-store", () => {
   });
   const plainPass = ref("");
   const token = ref("");
-  const bannedReason = ref("")
+  const bannedReason = ref("");
 
   const getDriver = computed(() => {
     return driver.value;
@@ -227,6 +232,7 @@ export const useAuth = defineStore("auth-store", () => {
         await toast.present();
 
         await Promise.allSettled([
+          Preferences.remove({ key: "banned" }),
           Preferences.set({ key: "validation", value: "waiting" }),
           Preferences.set({ key: "auth_token", value: res.data.token }),
         ]);
@@ -234,7 +240,7 @@ export const useAuth = defineStore("auth-store", () => {
         if (router.currentRoute.value.fullPath === "/validation-waiting") {
           return;
         }
-        
+
         await router.push("/validation-waiting");
         return;
       }
@@ -288,7 +294,7 @@ export const useAuth = defineStore("auth-store", () => {
         await toast.present();
 
         await Promise.allSettled([
-          Preferences.clear(),
+          Preferences.remove({ key: "validation" }),
           Preferences.set({ key: "banned", value: "true" }),
         ]);
 
@@ -301,25 +307,67 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.VALIDATION_DONE) {
+      if (res.data.status === DriverResponseStatus.VALIDATION_FAILED) {
         await loading.dismiss();
-
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              handler: async () => {
-                await toast.dismiss();
-              },
-            },
-          ],
+        const { value: validation } = await Preferences.get({
+          key: "validation",
         });
 
-        await toast.present();
+        if (validation !== DriverValidation.INVALIDATED) {
+          const toast = await toastController.create({
+            message: res.data.msg,
+            duration: 4000,
+            buttons: [
+              {
+                text: "OK",
+                async handler() {
+                  await toast.dismiss();
+                },
+              },
+            ],
+          });
+
+          await toast.present();
+
+          await Preferences.set({
+            key: "validation",
+            value: DriverValidation.INVALIDATED,
+          });
+        }
+
+        if (router.currentRoute.value.fullPath !== "/invalidation") {
+          await router.push("/invalidation");
+          return;
+        }
+
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.VALIDATION_DONE) {
+        await loading.dismiss();
+        const { value: validation } = await Preferences.get({
+          key: "validation",
+        });
+
+        if (validation !== "validated") {
+          const toast = await toastController.create({
+            message: res.data.msg,
+            duration: 4000,
+            buttons: [
+              {
+                text: "OK",
+                handler: async () => {
+                  await toast.dismiss();
+                },
+              },
+            ],
+          });
+
+          await toast.present();
+        }
 
         await Promise.allSettled([
+          Preferences.remove({ key: "banned" }),
           Preferences.set({ key: "validation", value: "validated" }),
           Preferences.set({ key: "auth_token", value: res.data.token }),
           Preferences.set({ key: "driverOneId", value: res.data.driver.oneId }),
@@ -364,6 +412,6 @@ export const useAuth = defineStore("auth-store", () => {
     plainPass,
     token,
     checkIfValidated,
-    bannedReason
+    bannedReason,
   };
 });
