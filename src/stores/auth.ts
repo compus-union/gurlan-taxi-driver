@@ -149,6 +149,8 @@ export const useAuth = defineStore("auth-store", () => {
           setToken(sendingDriverInfo.data.token),
         ]);
 
+        driver.value.password = "";
+        
         return {
           msg: sendingDriverInfo.data.msg,
           status: DriverResponseStatus.REGISTRATION_DONE,
@@ -403,6 +405,44 @@ export const useAuth = defineStore("auth-store", () => {
     }
   }
 
+  async function login(payload: { oneId: string; password: string }): Promise<{
+    msg: string;
+    status: UniversalResponseStatus | DriverResponseStatus;
+    [propName: string]: any;
+  }> {
+    try {
+      await loadingStore.setLoading(true);
+
+      const res = await authInstance.post("/login", payload);
+
+      if (!res) {
+        return {
+          msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
+          status: UniversalResponseStatus.ERR_NETWORK,
+        };
+      }
+
+      return {
+        msg: res.data.msg,
+        status: res.data.status,
+      };
+    } catch (error: any) {
+      if (!error.response) {
+        return {
+          status: UniversalResponseStatus.ERR_NETWORK,
+          msg: "Internetingizni tekshirib boshqatdan urinib ko'ring",
+        };
+      }
+
+      return {
+        status: DriverResponseStatus.UNKNOWN_ERR,
+        msg: error.message,
+      };
+    } finally {
+      await loadingStore.setLoading(false);
+    }
+  }
+
   return {
     register,
     driver,
@@ -413,5 +453,6 @@ export const useAuth = defineStore("auth-store", () => {
     token,
     checkIfValidated,
     bannedReason,
+    login,
   };
 });

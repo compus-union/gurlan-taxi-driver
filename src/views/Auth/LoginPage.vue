@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonText, IonButton, IonCheckbox } from "@ionic/vue";
+import { IonText, IonButton, IonCheckbox, toastController } from "@ionic/vue";
 import AuthLayout from "@/layouts/AuthLayout.vue";
 import { computed, onBeforeMount, ref } from "vue";
 import { useAuth } from "@/stores/auth";
@@ -7,6 +7,7 @@ import { Preferences } from "@capacitor/preferences";
 import Message from "@/components/UI/Message.vue";
 import { vMaska } from "maska";
 import { vUppercase } from "@/directives/uppercase";
+import { DriverResponseStatus, UniversalResponseStatus } from "@/constants";
 
 const authStore = useAuth();
 
@@ -33,6 +34,34 @@ const disableButton = computed(() => {
     return true;
   }
 });
+
+const action = async () => {
+  const { value: oneId } = await Preferences.get({ key: "driverOneId" });
+  const { value: token } = await Preferences.get({ key: "auth_token" });
+  try {
+    const result = await authStore.login({
+      oneId: oneId as string,
+      password: authStore.driver.password,
+    });
+
+    if (result.status === DriverResponseStatus.AUTH_WARNING) {
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
+    }
+  } catch (error) {}
+};
 </script>
 
 <template>
