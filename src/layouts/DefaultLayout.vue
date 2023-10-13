@@ -1,4 +1,5 @@
 <script lang="ts">
+import { Preferences } from "@capacitor/preferences";
 import {
   IonButton,
   IonButtons,
@@ -10,12 +11,9 @@ import {
   IonSplitPane,
   IonTitle,
   IonToolbar,
-  loadingController,
-  toastController,
 } from "@ionic/vue";
-
-import { Preferences } from "@capacitor/preferences";
-import { useRouter } from "vue-router";
+import { onBeforeMount } from "vue";
+import { useAuth } from "@/stores/auth";
 
 export default {
   components: {
@@ -29,6 +27,21 @@ export default {
     IonSplitPane,
     IonTitle,
     IonToolbar,
+  },
+
+  setup() {
+    const authStore = useAuth();
+
+    const check = async () => {
+      const { value: oneId } = await Preferences.get({ key: "driverOneId" });
+      const { value: token } = await Preferences.get({ key: "auth_token" });
+
+      await authStore.checkIfValidated({ oneId, token });
+    };
+
+    onBeforeMount(async () => {
+      await check();
+    });
   },
 };
 </script>

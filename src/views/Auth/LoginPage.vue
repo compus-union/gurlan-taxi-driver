@@ -7,9 +7,18 @@ import { Preferences } from "@capacitor/preferences";
 import Message from "@/components/UI/Message.vue";
 import { vMaska } from "maska";
 import { vUppercase } from "@/directives/uppercase";
-import { DriverResponseStatus, UniversalResponseStatus } from "@/constants";
+import {
+  DriverResponseStatus,
+  DriverValidation,
+  UniversalResponseStatus,
+} from "@/constants";
+import { useLoading } from "@/stores/loading";
+import router from "@/router";
+import { authInstance } from "@/http";
+import { key } from "ionicons/icons";
 
 const authStore = useAuth();
+const loadingStore = useLoading();
 
 const checkValidation = async () => {
   const { value: oneId } = await Preferences.get({ key: "driverOneId" });
@@ -36,17 +45,104 @@ const disableButton = computed(() => {
 });
 
 const action = async () => {
-  const { value: oneId } = await Preferences.get({ key: "driverOneId" });
-  const { value: token } = await Preferences.get({ key: "auth_token" });
   try {
     const result = await authStore.login({
-      oneId: oneId as string,
+      oneId: authStore.driver.oneId as string,
       password: authStore.driver.password,
     });
 
+    const toast = await toastController.create({
+      message: result.msg,
+      duration: 10000,
+      buttons: [
+        {
+          text: "OK",
+          async handler() {
+            await toast.dismiss();
+          },
+        },
+      ],
+    });
+
+    await toast.present();
+
     if (result.status === DriverResponseStatus.AUTH_WARNING) {
+      return;
+    }
+
+    if (result.status === DriverResponseStatus.DRIVER_BANNED) {
+      await Promise.allSettled([
+        Preferences.remove({ key: "validation" }),
+        Preferences.set({ key: "banned", value: "true" }),
+        router.push("/banned"),
+      ]);
+
+      return;
+    }
+
+    if (result.status === DriverResponseStatus.VALIDATION_FAILED) {
+      await Promise.allSettled([
+        Preferences.remove({ key: "banned" }),
+        Preferences.set({
+          key: "validation",
+          value: DriverValidation.INVALIDATED,
+        }),
+        router.push("/invalidation"),
+      ]);
+
+      return;
+    }
+
+    if (result.status === DriverResponseStatus.VALIDATION_WAITING) {
+      await Promise.allSettled([
+        Preferences.remove({ key: "banned" }),
+        Preferences.set({
+          key: "validation",
+          value: DriverValidation.WAITING,
+        }),
+        router.push("/validation-waiting"),
+      ]);
+
+      return;
+    }
+
+    if (result.status === UniversalResponseStatus.ERR_NETWORK) {
+      return;
+    }
+
+    if (result.status === DriverResponseStatus.DRIVER_NOT_FOUND) {
+      await Promise.allSettled([Preferences.clear(), router.push("/register")]);
+      return;
+    }
+
+    if (
+      result.status === DriverResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
+      result.status === DriverResponseStatus.DRIVER_TOKEN_NOT_VALID ||
+      result.status === DriverResponseStatus.HEADERS_NOT_FOUND
+    ) {
+      return;
+    }
+
+    if (result.status === DriverResponseStatus.LOGIN_DONE) {
+      await Promise.allSettled([
+        Preferences.set({ key: "validation", value: DriverValidation.SUCCESS }),
+        Preferences.set({ key: "driverOneId", value: result.oneId }),
+        Preferences.set({ key: "auth_token", value: result.token }),
+      ]);
+
+      setTimeout(() => {
+        router.push("/home");
+      }, 200);
+
+      const { value } = await Preferences.get({ key: "validation" });
+      console.log(value);
+
+      return;
+    }
+  } catch (error: any) {
+    if (!error.response) {
       const toast = await toastController.create({
-        message: result.msg,
+        message: "Serverda xatolik, boshqatdan yoki keyinroq urinib ko'ring.",
         duration: 4000,
         buttons: [
           {
@@ -59,8 +155,27 @@ const action = async () => {
       });
 
       await toast.present();
+      return;
     }
-  } catch (error) {}
+    const toast = await toastController.create({
+      message:
+        error.response.data.msg ||
+        error.message ||
+        "Serverda xatolik, boshqatdan yoki keyinroq urinib ko'ring.",
+      duration: 4000,
+      buttons: [
+        {
+          text: "OK",
+          async handler() {
+            await toast.dismiss();
+          },
+        },
+      ],
+    });
+
+    await toast.present();
+    return;
+  }
 };
 </script>
 
@@ -108,14 +223,21 @@ const action = async () => {
               >
             </div>
             <IonButton
-              @click="() => console.log(disableButton)"
-              :disabled="disableButton"
+              @click="action"
+              :disabled="loadingStore.loading || disableButton"
               class="default-btn w-full font-bold uppercase"
               type="button"
               >KIRISH
             </IonButton>
           </div>
         </div>
+        <Message class="mt-4"
+          >Agar tizimga kirishda muammolarga duch kelayotgan bo'lsangiz,
+          quyidagi raqamlarga murojaat qiling: <br />
+          <br />
+          +998 99 944 76 13 <br />
+          +998 95 171 31 47</Message
+        >
       </div>
     </div>
   </AuthLayout>

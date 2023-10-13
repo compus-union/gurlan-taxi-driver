@@ -40,6 +40,7 @@ export enum DriverResponseStatus {
   REGISTRATION_DONE = "REGISTRATION_DONE",
   LOGIN_DONE = "LOGIN_DONE",
   UNKNOWN_ERR = "UNKNOWN_ERR",
+  LOGIN_FAILED = 'LOGIN_FAILED'
 }
 
 export enum UniversalResponseStatus {

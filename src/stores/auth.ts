@@ -150,7 +150,7 @@ export const useAuth = defineStore("auth-store", () => {
         ]);
 
         driver.value.password = "";
-        
+
         return {
           msg: sendingDriverInfo.data.msg,
           status: DriverResponseStatus.REGISTRATION_DONE,
@@ -379,6 +379,37 @@ export const useAuth = defineStore("auth-store", () => {
         }, 500);
         return;
       }
+
+      if (res.data.status === DriverResponseStatus.LOGIN_FAILED) {
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.LOGIN_DONE) {
+        await Promise.allSettled([
+          Preferences.set({
+            key: "validation",
+            value: DriverValidation.SUCCESS,
+          }),
+          Preferences.set({ key: "driverOneId", value: res.data.driver.oneId }),
+          Preferences.set({ key: "auth_token", value: res.data.token }),
+        ]);
+
+        return;
+      }
     } catch (error: any) {
       console.log(error);
 
@@ -405,15 +436,61 @@ export const useAuth = defineStore("auth-store", () => {
     }
   }
 
+  async function checkIfLoggedIn(payload: {
+    oneId: string;
+    token: string;
+  }): Promise<void> {
+    try {
+      const res = await authInstance.get(`/check-logged-in/${payload.oneId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const toastModal = await toastController.create({
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toastModal.dismiss();
+            },
+          },
+        ],
+      });
+
+      if (!res) {
+        toastModal.message = `Server bilan aloqa mavjud emas, internetingizni tekshirib boshqatdan urinib ko'ring`;
+        await toastModal.present();
+      }
+
+      if (res.data.status === DriverResponseStatus.DRIVER_NOT_FOUND) {
+        toastModal.message = "Ma'lumotlaringiz topilmadi. Boshqatdan ro'yxatdan o'ting"
+        await toastModal.present()
+
+        setTimeout(() => {
+          router.push('/register')
+        }, 300)
+      }
+
+      if (res.data.status === DriverResponseStatus.HEADERS_NOT_FOUND) {
+        await Preferences.clear()
+
+        toastModal.message = ''
+      }
+    } catch (error) {}
+  }
+
   async function login(payload: { oneId: string; password: string }): Promise<{
     msg: string;
     status: UniversalResponseStatus | DriverResponseStatus;
     [propName: string]: any;
   }> {
     try {
+      const { value: token } = await Preferences.get({ key: "auth_token" });
       await loadingStore.setLoading(true);
 
-      const res = await authInstance.post("/login", payload);
+      const res = await authInstance.post("/login", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (!res) {
         return {
@@ -425,9 +502,14 @@ export const useAuth = defineStore("auth-store", () => {
       return {
         msg: res.data.msg,
         status: res.data.status,
+        reason: res.data?.reason || null,
+        token: res.data?.token || null,
+        oneId: res.data?.driver?.oneId || null,
       };
     } catch (error: any) {
       if (!error.response) {
+        console.log(error);
+
         return {
           status: UniversalResponseStatus.ERR_NETWORK,
           msg: "Internetingizni tekshirib boshqatdan urinib ko'ring",
