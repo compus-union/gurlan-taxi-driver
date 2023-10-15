@@ -36,7 +36,10 @@ export default {
       const { value: oneId } = await Preferences.get({ key: "driverOneId" });
       const { value: token } = await Preferences.get({ key: "auth_token" });
 
-      await authStore.checkIfValidated({ oneId, token });
+      await authStore.checkIfLoggedIn({
+        oneId: oneId as string,
+        token: token as string,
+      });
     };
 
     onBeforeMount(async () => {
@@ -45,6 +48,7 @@ export default {
   },
 };
 </script>
+
 
 <template>
   <IonPage>

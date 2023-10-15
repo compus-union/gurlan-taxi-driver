@@ -114,7 +114,7 @@ export const useAuth = defineStore("auth-store", () => {
         car: payload.car,
       });
 
-      if (!sendingDriverInfo) {
+      if (sendingDriverInfo.status >= 400) {
         return {
           msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
           status: UniversalResponseStatus.ERR_NETWORK,
@@ -164,16 +164,20 @@ export const useAuth = defineStore("auth-store", () => {
         msg: "Something just happened",
       };
     } catch (error: any) {
-      if (!error.response) {
+      if (
+        error.message === "Network Error" ||
+        error.message.includes("timeout")
+      ) {
         return {
+          msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
           status: UniversalResponseStatus.ERR_NETWORK,
-          msg: "Internetingizni tekshirib boshqatdan urinib ko'ring",
         };
       }
 
+      // Handle other unknown errors
       return {
+        msg: "An unknown error occurred, please try again later.",
         status: DriverResponseStatus.UNKNOWN_ERR,
-        msg: error.message,
       };
     } finally {
       await loadingStore.setLoading(false);
@@ -195,7 +199,7 @@ export const useAuth = defineStore("auth-store", () => {
       const res = await authInstance.get(`/check-validation/${payload.oneId}`, {
         headers: { Authorization: `Bearer ${payload.token}` },
       });
-      if (!res) {
+      if (res.status >= 400) {
         await loading.dismiss();
         const toast = await toastController.create({
           message: "Nimadir xato ketdi, internetingizni tekshiring.",
@@ -411,14 +415,35 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
     } catch (error: any) {
+      await loading.dismiss();
+
       console.log(error);
 
-      await loading.dismiss();
+      if (
+        error.message === "Network Error" ||
+        error.message.includes("timeout")
+      ) {
+        const newToast = await toastController.create({
+          message: "Serverda xatolik, yoki internet bilan aloqa mavjud emas.",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await newToast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await newToast.present();
+
+        return;
+      }
+
+      // Handle other unknown errors
       const newToast = await toastController.create({
-        message:
-          error.message ||
-          error.response.data.msg ||
-          "Serverda xatolik, yoki internet bilan aloqa mavjud emas.",
+        message: "Noma'lum xatolik sodir bo'ldi, boshqatdan urinib ko'ring",
         duration: 4000,
         buttons: [
           {
@@ -431,6 +456,8 @@ export const useAuth = defineStore("auth-store", () => {
       });
 
       await newToast.present();
+
+      return;
     } finally {
       await loadingStore.setLoading(false);
     }
@@ -442,7 +469,7 @@ export const useAuth = defineStore("auth-store", () => {
   }): Promise<void> {
     try {
       const res = await authInstance.get(`/check-logged-in/${payload.oneId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${payload.token}` },
       });
 
       const toastModal = await toastController.create({
@@ -457,26 +484,110 @@ export const useAuth = defineStore("auth-store", () => {
         ],
       });
 
-      if (!res) {
+      if (res.status >= 400) {
         toastModal.message = `Server bilan aloqa mavjud emas, internetingizni tekshirib boshqatdan urinib ko'ring`;
         await toastModal.present();
+        return;
       }
 
-      if (res.data.status === DriverResponseStatus.DRIVER_NOT_FOUND) {
-        toastModal.message = "Ma'lumotlaringiz topilmadi. Boshqatdan ro'yxatdan o'ting"
-        await toastModal.present()
+      if (
+        res.data.status === DriverResponseStatus.DRIVER_NOT_FOUND ||
+        res.data.status === DriverResponseStatus.HEADERS_NOT_FOUND ||
+        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
+        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_VALID
+      ) {
+        toastModal.message =
+          "Ma'lumotlaringiz topilmadi, yoki yaroqsiz. Boshqatdan ro'yxatdan o'ting";
+        await toastModal.present();
+        await Preferences.clear();
 
         setTimeout(() => {
-          router.push('/register')
-        }, 300)
+          router.push("/register");
+        }, 300);
+        return;
       }
 
-      if (res.data.status === DriverResponseStatus.HEADERS_NOT_FOUND) {
-        await Preferences.clear()
+      if (res.data.status === DriverResponseStatus.DRIVER_BANNED) {
+        toastModal.message = "Sizning akkauntingiz bloklandi.";
+        await toastModal.present();
+        await Promise.allSettled([
+          Preferences.set({ key: "banned", value: "true" }),
+          Preferences.remove({ key: "validation" }),
+        ]);
 
-        toastModal.message = ''
+        setTimeout(() => {
+          router.push("/banned");
+        }, 300);
+        return;
       }
-    } catch (error) {}
+
+      if (res.data.status === DriverResponseStatus.LOGIN_FAILED) {
+        toastModal.message = "Tizimdan foydalanishga sizda imkoniyat yo'q";
+        await toastModal.present();
+
+        await Promise.allSettled([
+          Preferences.set({
+            key: "validation",
+            value: DriverValidation.INVALIDATED,
+          }),
+          Preferences.remove({ key: "banned" }),
+        ]);
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.LOGIN_DONE) {
+        await Promise.allSettled([
+          Preferences.set({
+            key: "validation",
+            value: DriverValidation.SUCCESS,
+          }),
+          Preferences.set({ key: "driverOneId", value: res.data.driver.oneId }),
+          Preferences.set({ key: "auth_token", value: res.data.token }),
+        ]);
+        return;
+      }
+
+      return;
+    } catch (error: any) {
+      console.log(error);
+
+      if (
+        error.message === "Network Error" ||
+        error.message.includes("timeout")
+      ) {
+        const newToast = await toastController.create({
+          message: "Serverda xatolik, yoki internet bilan aloqa mavjud emas.",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await newToast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await newToast.present();
+
+        return;
+      }
+
+      const newToast = await toastController.create({
+        message: "Noma'lum xatolik yuz berdi, birozdan keyin urinib ko'ring",
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await newToast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await newToast.present();
+    }
   }
 
   async function login(payload: { oneId: string; password: string }): Promise<{
@@ -485,14 +596,14 @@ export const useAuth = defineStore("auth-store", () => {
     [propName: string]: any;
   }> {
     try {
-      const { value: token } = await Preferences.get({ key: "auth_token" });
       await loadingStore.setLoading(true);
+      const { value: token } = await Preferences.get({ key: "auth_token" });
 
       const res = await authInstance.post("/login", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res) {
+      if (res.status >= 400) {
         return {
           msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
           status: UniversalResponseStatus.ERR_NETWORK,
@@ -507,18 +618,20 @@ export const useAuth = defineStore("auth-store", () => {
         oneId: res.data?.driver?.oneId || null,
       };
     } catch (error: any) {
-      if (!error.response) {
-        console.log(error);
-
+      if (
+        error.message === "Network Error" ||
+        error.message.includes("timeout")
+      ) {
         return {
+          msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
           status: UniversalResponseStatus.ERR_NETWORK,
-          msg: "Internetingizni tekshirib boshqatdan urinib ko'ring",
         };
       }
 
+      // Handle other unknown errors
       return {
+        msg: "An unknown error occurred, please try again later.",
         status: DriverResponseStatus.UNKNOWN_ERR,
-        msg: error.message,
       };
     } finally {
       await loadingStore.setLoading(false);
@@ -536,5 +649,6 @@ export const useAuth = defineStore("auth-store", () => {
     checkIfValidated,
     bannedReason,
     login,
+    checkIfLoggedIn,
   };
 });
