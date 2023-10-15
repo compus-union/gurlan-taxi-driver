@@ -628,7 +628,6 @@ export const useAuth = defineStore("auth-store", () => {
         };
       }
 
-      // Handle other unknown errors
       return {
         msg: "An unknown error occurred, please try again later.",
         status: DriverResponseStatus.UNKNOWN_ERR,
