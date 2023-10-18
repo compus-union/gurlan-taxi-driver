@@ -1,6 +1,11 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
-import { StatusDriver, DriverTypes, StatusLicenseDocuments } from "@/constants";
+import {
+  StatusDriver,
+  DriverTypes,
+  StatusLicenseDocuments,
+  DriverValidation,
+} from "@/constants";
 import { authInstance } from "@/http";
 import { Preferences } from "@capacitor/preferences";
 import { useLoading } from "./loading";
@@ -57,6 +62,7 @@ export const useAuth = defineStore("auth-store", () => {
   });
   const plainPass = ref("");
   const token = ref("");
+  const bannedReason = ref("");
 
   const getDriver = computed(() => {
     return driver.value;
@@ -108,7 +114,7 @@ export const useAuth = defineStore("auth-store", () => {
         car: payload.car,
       });
 
-      if (!sendingDriverInfo) {
+      if (sendingDriverInfo.status >= 400) {
         return {
           msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
           status: UniversalResponseStatus.ERR_NETWORK,
@@ -143,6 +149,8 @@ export const useAuth = defineStore("auth-store", () => {
           setToken(sendingDriverInfo.data.token),
         ]);
 
+        driver.value.password = "";
+
         return {
           msg: sendingDriverInfo.data.msg,
           status: DriverResponseStatus.REGISTRATION_DONE,
@@ -156,16 +164,20 @@ export const useAuth = defineStore("auth-store", () => {
         msg: "Something just happened",
       };
     } catch (error: any) {
-      if (!error.response) {
+      if (
+        error.message === "Network Error" ||
+        error.message.includes("timeout")
+      ) {
         return {
+          msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
           status: UniversalResponseStatus.ERR_NETWORK,
-          msg: "Internetingizni tekshirib boshqatdan urinib ko'ring",
         };
       }
 
+      // Handle other unknown errors
       return {
+        msg: "An unknown error occurred, please try again later.",
         status: DriverResponseStatus.UNKNOWN_ERR,
-        msg: error.message,
       };
     } finally {
       await loadingStore.setLoading(false);
@@ -187,7 +199,7 @@ export const useAuth = defineStore("auth-store", () => {
       const res = await authInstance.get(`/check-validation/${payload.oneId}`, {
         headers: { Authorization: `Bearer ${payload.token}` },
       });
-      if (!res) {
+      if (res.status >= 400) {
         await loading.dismiss();
         const toast = await toastController.create({
           message: "Nimadir xato ketdi, internetingizni tekshiring.",
@@ -226,6 +238,7 @@ export const useAuth = defineStore("auth-store", () => {
         await toast.present();
 
         await Promise.allSettled([
+          Preferences.remove({ key: "banned" }),
           Preferences.set({ key: "validation", value: "waiting" }),
           Preferences.set({ key: "auth_token", value: res.data.token }),
         ]);
@@ -233,7 +246,7 @@ export const useAuth = defineStore("auth-store", () => {
         if (router.currentRoute.value.fullPath === "/validation-waiting") {
           return;
         }
-        
+
         await router.push("/validation-waiting");
         return;
       }
@@ -287,7 +300,7 @@ export const useAuth = defineStore("auth-store", () => {
         await toast.present();
 
         await Promise.allSettled([
-          Preferences.clear(),
+          Preferences.remove({ key: "validation" }),
           Preferences.set({ key: "banned", value: "true" }),
         ]);
 
@@ -300,25 +313,67 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.VALIDATION_DONE) {
+      if (res.data.status === DriverResponseStatus.VALIDATION_FAILED) {
         await loading.dismiss();
-
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              handler: async () => {
-                await toast.dismiss();
-              },
-            },
-          ],
+        const { value: validation } = await Preferences.get({
+          key: "validation",
         });
 
-        await toast.present();
+        if (validation !== DriverValidation.INVALIDATED) {
+          const toast = await toastController.create({
+            message: res.data.msg,
+            duration: 4000,
+            buttons: [
+              {
+                text: "OK",
+                async handler() {
+                  await toast.dismiss();
+                },
+              },
+            ],
+          });
+
+          await toast.present();
+
+          await Preferences.set({
+            key: "validation",
+            value: DriverValidation.INVALIDATED,
+          });
+        }
+
+        if (router.currentRoute.value.fullPath !== "/invalidation") {
+          await router.push("/invalidation");
+          return;
+        }
+
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.VALIDATION_DONE) {
+        await loading.dismiss();
+        const { value: validation } = await Preferences.get({
+          key: "validation",
+        });
+
+        if (validation !== "validated") {
+          const toast = await toastController.create({
+            message: res.data.msg,
+            duration: 4000,
+            buttons: [
+              {
+                text: "OK",
+                handler: async () => {
+                  await toast.dismiss();
+                },
+              },
+            ],
+          });
+
+          await toast.present();
+        }
 
         await Promise.allSettled([
+          Preferences.remove({ key: "banned" }),
           Preferences.set({ key: "validation", value: "validated" }),
           Preferences.set({ key: "auth_token", value: res.data.token }),
           Preferences.set({ key: "driverOneId", value: res.data.driver.oneId }),
@@ -328,15 +383,67 @@ export const useAuth = defineStore("auth-store", () => {
         }, 500);
         return;
       }
+
+      if (res.data.status === DriverResponseStatus.LOGIN_FAILED) {
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.LOGIN_DONE) {
+        await Promise.allSettled([
+          Preferences.set({
+            key: "validation",
+            value: DriverValidation.SUCCESS,
+          }),
+          Preferences.set({ key: "driverOneId", value: res.data.driver.oneId }),
+          Preferences.set({ key: "auth_token", value: res.data.token }),
+        ]);
+
+        return;
+      }
     } catch (error: any) {
+      await loading.dismiss();
+
       console.log(error);
 
-      await loading.dismiss();
+      if (
+        error.message === "Network Error" ||
+        error.message.includes("timeout")
+      ) {
+        const newToast = await toastController.create({
+          message: "Serverda xatolik, yoki internet bilan aloqa mavjud emas.",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await newToast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await newToast.present();
+
+        return;
+      }
+
+      // Handle other unknown errors
       const newToast = await toastController.create({
-        message:
-          error.message ||
-          error.response.data.msg ||
-          "Serverda xatolik, yoki internet bilan aloqa mavjud emas.",
+        message: "Noma'lum xatolik sodir bo'ldi, boshqatdan urinib ko'ring",
         duration: 4000,
         buttons: [
           {
@@ -349,6 +456,183 @@ export const useAuth = defineStore("auth-store", () => {
       });
 
       await newToast.present();
+
+      return;
+    } finally {
+      await loadingStore.setLoading(false);
+    }
+  }
+
+  async function checkIfLoggedIn(payload: {
+    oneId: string;
+    token: string;
+  }): Promise<void> {
+    try {
+      const res = await authInstance.get(`/check-logged-in/${payload.oneId}`, {
+        headers: { Authorization: `Bearer ${payload.token}` },
+      });
+
+      const toastModal = await toastController.create({
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toastModal.dismiss();
+            },
+          },
+        ],
+      });
+
+      if (res.status >= 400) {
+        alert(res.status)
+        toastModal.message = `Server bilan aloqa mavjud emas, internetingizni tekshirib boshqatdan urinib ko'ring`;
+        await toastModal.present();
+        return;
+      }
+
+      if (
+        res.data.status === DriverResponseStatus.DRIVER_NOT_FOUND ||
+        res.data.status === DriverResponseStatus.HEADERS_NOT_FOUND ||
+        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
+        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_VALID
+      ) {
+        toastModal.message =
+          "Ma'lumotlaringiz topilmadi, yoki yaroqsiz. Boshqatdan ro'yxatdan o'ting";
+        await toastModal.present();
+        await Preferences.clear();
+
+        setTimeout(() => {
+          router.push("/register");
+        }, 300);
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.DRIVER_BANNED) {
+        toastModal.message = "Sizning akkauntingiz bloklandi.";
+        await toastModal.present();
+        await Promise.allSettled([
+          Preferences.set({ key: "banned", value: "true" }),
+          Preferences.remove({ key: "validation" }),
+        ]);
+
+        setTimeout(() => {
+          router.push("/banned");
+        }, 300);
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.LOGIN_FAILED) {
+        toastModal.message = "Tizimdan foydalanishga sizda imkoniyat yo'q";
+        await toastModal.present();
+
+        await Promise.allSettled([
+          Preferences.set({
+            key: "validation",
+            value: DriverValidation.INVALIDATED,
+          }),
+          Preferences.remove({ key: "banned" }),
+        ]);
+        return;
+      }
+
+      if (res.data.status === DriverResponseStatus.LOGIN_DONE) {
+        await Promise.allSettled([
+          Preferences.set({
+            key: "validation",
+            value: DriverValidation.SUCCESS,
+          }),
+          Preferences.set({ key: "driverOneId", value: res.data.driver.oneId }),
+          Preferences.set({ key: "auth_token", value: res.data.token }),
+        ]);
+        return;
+      }
+
+      return;
+    } catch (error: any) {
+      console.log(error);
+
+      if (
+        error.message === "Network Error" ||
+        error.message.includes("timeout")
+      ) {
+        const newToast = await toastController.create({
+          message: "Serverda xatolik, yoki internet bilan aloqa mavjud emas.",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await newToast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await newToast.present();
+
+        return;
+      }
+
+      const newToast = await toastController.create({
+        message: "Noma'lum xatolik yuz berdi, birozdan keyin urinib ko'ring",
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await newToast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await newToast.present();
+    }
+  }
+
+  async function login(payload: { oneId: string; password: string }): Promise<{
+    msg: string;
+    status: UniversalResponseStatus | DriverResponseStatus;
+    [propName: string]: any;
+  }> {
+    try {
+      await loadingStore.setLoading(true);
+      const { value: token } = await Preferences.get({ key: "auth_token" });
+
+      const res = await authInstance.post("/login", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.status >= 400) {
+        return {
+          msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
+          status: UniversalResponseStatus.ERR_NETWORK,
+        };
+      }
+
+      return {
+        msg: res.data.msg,
+        status: res.data.status,
+        reason: res.data?.reason || null,
+        token: res.data?.token || null,
+        oneId: res.data?.driver?.oneId || null,
+      };
+    } catch (error: any) {
+      if (
+        error.message === "Network Error" ||
+        error.message.includes("timeout")
+      ) {
+        return {
+          msg: "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring.",
+          status: UniversalResponseStatus.ERR_NETWORK,
+        };
+      }
+
+      return {
+        msg: "An unknown error occurred, please try again later.",
+        status: DriverResponseStatus.UNKNOWN_ERR,
+      };
     } finally {
       await loadingStore.setLoading(false);
     }
@@ -363,5 +647,8 @@ export const useAuth = defineStore("auth-store", () => {
     plainPass,
     token,
     checkIfValidated,
+    bannedReason,
+    login,
+    checkIfLoggedIn,
   };
 });

@@ -48,3 +48,4 @@ onBeforeMount(async () => {
     </div>
   </AuthLayout>
 </template>
+@/stores/auth/auth
