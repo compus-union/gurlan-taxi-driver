@@ -485,6 +485,7 @@ export const useAuth = defineStore("auth-store", () => {
       });
 
       if (res.status >= 400) {
+        alert(res.status)
         toastModal.message = `Server bilan aloqa mavjud emas, internetingizni tekshirib boshqatdan urinib ko'ring`;
         await toastModal.present();
         return;
