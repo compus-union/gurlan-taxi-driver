@@ -8,7 +8,7 @@ import Message from "@/components/UI/Message.vue";
 import { vMaska } from "maska";
 import { vUppercase } from "@/directives/uppercase";
 import {
-  DriverResponseStatus,
+  ResponseStatus,
   DriverValidation,
   UniversalResponseStatus,
 } from "@/constants";
@@ -66,11 +66,11 @@ const action = async () => {
 
     await toast.present();
 
-    if (result.status === DriverResponseStatus.AUTH_WARNING) {
+    if (result.status === ResponseStatus.AUTH_WARNING) {
       return;
     }
 
-    if (result.status === DriverResponseStatus.DRIVER_BANNED) {
+    if (result.status === ResponseStatus.DRIVER_BANNED) {
       await Promise.allSettled([
         Preferences.remove({ key: "validation" }),
         Preferences.set({ key: "banned", value: "true" }),
@@ -80,7 +80,7 @@ const action = async () => {
       return;
     }
 
-    if (result.status === DriverResponseStatus.VALIDATION_FAILED) {
+    if (result.status === ResponseStatus.VALIDATION_FAILED) {
       await Promise.allSettled([
         Preferences.remove({ key: "banned" }),
         Preferences.set({
@@ -93,7 +93,7 @@ const action = async () => {
       return;
     }
 
-    if (result.status === DriverResponseStatus.VALIDATION_WAITING) {
+    if (result.status === ResponseStatus.VALIDATION_WAITING) {
       await Promise.allSettled([
         Preferences.remove({ key: "banned" }),
         Preferences.set({
@@ -110,20 +110,20 @@ const action = async () => {
       return;
     }
 
-    if (result.status === DriverResponseStatus.DRIVER_NOT_FOUND) {
+    if (result.status === ResponseStatus.DRIVER_NOT_FOUND) {
       await Promise.allSettled([Preferences.clear(), router.push("/register")]);
       return;
     }
 
     if (
-      result.status === DriverResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
-      result.status === DriverResponseStatus.DRIVER_TOKEN_NOT_VALID ||
-      result.status === DriverResponseStatus.HEADERS_NOT_FOUND
+      result.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
+      result.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID ||
+      result.status === ResponseStatus.HEADERS_NOT_FOUND
     ) {
       return;
     }
 
-    if (result.status === DriverResponseStatus.LOGIN_DONE) {
+    if (result.status === ResponseStatus.LOGIN_DONE) {
       await Promise.allSettled([
         Preferences.set({ key: "validation", value: DriverValidation.SUCCESS }),
         Preferences.set({ key: "driverOneId", value: result.oneId }),

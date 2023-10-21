@@ -13,7 +13,7 @@ import { computed, ref } from "vue";
 import { useLoading } from "@/stores/loading";
 import router from "@/router";
 import { authInstance } from "@/http";
-import { DriverResponseStatus } from "@/constants";
+import { ResponseStatus } from "@/constants";
 
 const loadingStore = useLoading();
 const formData = new FormData();
@@ -72,7 +72,7 @@ const action = async () => {
       files: formData,
     });
 
-    if (result.status === DriverResponseStatus.AUTH_WARNING) {
+    if (result.status === ResponseStatus.AUTH_WARNING) {
       await loading.dismiss();
       const toast = await toastController.create({
         message: result.msg,
@@ -93,7 +93,7 @@ const action = async () => {
       return;
     }
 
-    if (result.status === DriverResponseStatus.REGISTRATION_DONE) {
+    if (result.status === ResponseStatus.REGISTRATION_DONE) {
       const sendingPictures = await authInstance.post(
         `/send-images/${result.oneId}/${authStore.plainPass}`,
         formData,
@@ -128,7 +128,7 @@ const action = async () => {
         return;
       }
 
-      if (sendingPictures.data.status !== DriverResponseStatus.IMAGES_SENT) {
+      if (sendingPictures.data.status !== ResponseStatus.IMAGES_SENT) {
         await loading.dismiss();
 
         const warningToast = await toastController.create({
@@ -177,7 +177,7 @@ const action = async () => {
       return;
     }
 
-    if (result.status === DriverResponseStatus.UNKNOWN_ERR) {
+    if (result.status === ResponseStatus.UNKNOWN_ERR) {
       await loading.dismiss();
 
       const toast = await toastController.create({

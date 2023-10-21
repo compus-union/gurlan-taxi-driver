@@ -11,7 +11,7 @@ import { Preferences } from "@capacitor/preferences";
 import { useLoading } from "./loading";
 import { loadingController, toastController } from "@ionic/vue";
 import { useRouter } from "vue-router";
-import { DriverResponseStatus } from "@/constants";
+import { ResponseStatus } from "@/constants";
 import { UniversalResponseStatus } from "@/constants";
 
 interface Driver {
@@ -101,7 +101,7 @@ export const useAuth = defineStore("auth-store", () => {
     car: Car;
     files: FormData;
   }): Promise<{
-    status: UniversalResponseStatus | DriverResponseStatus;
+    status: UniversalResponseStatus | ResponseStatus;
     msg: string;
     [propName: string]: any;
   }> {
@@ -121,15 +121,15 @@ export const useAuth = defineStore("auth-store", () => {
         };
       }
 
-      if (sendingDriverInfo.data.status === DriverResponseStatus.AUTH_WARNING) {
+      if (sendingDriverInfo.data.status === ResponseStatus.AUTH_WARNING) {
         return {
           msg: sendingDriverInfo.data.msg,
-          status: DriverResponseStatus.AUTH_WARNING,
+          status: ResponseStatus.AUTH_WARNING,
         };
       }
 
       if (
-        sendingDriverInfo.data.status === DriverResponseStatus.REGISTRATION_DONE
+        sendingDriverInfo.data.status === ResponseStatus.REGISTRATION_DONE
       ) {
         await Promise.allSettled([
           Preferences.set({
@@ -153,14 +153,14 @@ export const useAuth = defineStore("auth-store", () => {
 
         return {
           msg: sendingDriverInfo.data.msg,
-          status: DriverResponseStatus.REGISTRATION_DONE,
+          status: ResponseStatus.REGISTRATION_DONE,
           oneId: sendingDriverInfo.data.driver.oneId,
           password: driver.value.password,
         };
       }
 
       return {
-        status: DriverResponseStatus.UNKNOWN_ERR,
+        status: ResponseStatus.UNKNOWN_ERR,
         msg: "Something just happened",
       };
     } catch (error: any) {
@@ -177,7 +177,7 @@ export const useAuth = defineStore("auth-store", () => {
       // Handle other unknown errors
       return {
         msg: "An unknown error occurred, please try again later.",
-        status: DriverResponseStatus.UNKNOWN_ERR,
+        status: ResponseStatus.UNKNOWN_ERR,
       };
     } finally {
       await loadingStore.setLoading(false);
@@ -219,7 +219,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.VALIDATION_WAITING) {
+      if (res.data.status === ResponseStatus.VALIDATION_WAITING) {
         await loading.dismiss();
 
         const toast = await toastController.create({
@@ -252,10 +252,10 @@ export const useAuth = defineStore("auth-store", () => {
       }
 
       if (
-        res.data.status === DriverResponseStatus.DRIVER_NOT_FOUND ||
-        res.data.status === DriverResponseStatus.HEADERS_NOT_FOUND ||
-        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
-        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_VALID
+        res.data.status === ResponseStatus.DRIVER_NOT_FOUND ||
+        res.data.status === ResponseStatus.HEADERS_NOT_FOUND ||
+        res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
+        res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID
       ) {
         await loading.dismiss();
 
@@ -281,7 +281,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.DRIVER_BANNED) {
+      if (res.data.status === ResponseStatus.DRIVER_BANNED) {
         await loading.dismiss();
 
         const toast = await toastController.create({
@@ -313,7 +313,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.VALIDATION_FAILED) {
+      if (res.data.status === ResponseStatus.VALIDATION_FAILED) {
         await loading.dismiss();
         const { value: validation } = await Preferences.get({
           key: "validation",
@@ -349,7 +349,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.VALIDATION_DONE) {
+      if (res.data.status === ResponseStatus.VALIDATION_DONE) {
         await loading.dismiss();
         const { value: validation } = await Preferences.get({
           key: "validation",
@@ -384,7 +384,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.LOGIN_FAILED) {
+      if (res.data.status === ResponseStatus.LOGIN_FAILED) {
         const toast = await toastController.create({
           message: res.data.msg,
           duration: 4000,
@@ -402,7 +402,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.LOGIN_DONE) {
+      if (res.data.status === ResponseStatus.LOGIN_DONE) {
         await Promise.allSettled([
           Preferences.set({
             key: "validation",
@@ -492,10 +492,10 @@ export const useAuth = defineStore("auth-store", () => {
       }
 
       if (
-        res.data.status === DriverResponseStatus.DRIVER_NOT_FOUND ||
-        res.data.status === DriverResponseStatus.HEADERS_NOT_FOUND ||
-        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
-        res.data.status === DriverResponseStatus.DRIVER_TOKEN_NOT_VALID
+        res.data.status === ResponseStatus.DRIVER_NOT_FOUND ||
+        res.data.status === ResponseStatus.HEADERS_NOT_FOUND ||
+        res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
+        res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID
       ) {
         toastModal.message =
           "Ma'lumotlaringiz topilmadi, yoki yaroqsiz. Boshqatdan ro'yxatdan o'ting";
@@ -508,7 +508,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.DRIVER_BANNED) {
+      if (res.data.status === ResponseStatus.DRIVER_BANNED) {
         toastModal.message = "Sizning akkauntingiz bloklandi.";
         await toastModal.present();
         await Promise.allSettled([
@@ -522,7 +522,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.LOGIN_FAILED) {
+      if (res.data.status === ResponseStatus.LOGIN_FAILED) {
         toastModal.message = "Tizimdan foydalanishga sizda imkoniyat yo'q";
         await toastModal.present();
 
@@ -536,7 +536,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === DriverResponseStatus.LOGIN_DONE) {
+      if (res.data.status === ResponseStatus.LOGIN_DONE) {
         await Promise.allSettled([
           Preferences.set({
             key: "validation",
@@ -593,7 +593,7 @@ export const useAuth = defineStore("auth-store", () => {
 
   async function login(payload: { oneId: string; password: string }): Promise<{
     msg: string;
-    status: UniversalResponseStatus | DriverResponseStatus;
+    status: UniversalResponseStatus | ResponseStatus;
     [propName: string]: any;
   }> {
     try {
@@ -631,7 +631,7 @@ export const useAuth = defineStore("auth-store", () => {
 
       return {
         msg: "An unknown error occurred, please try again later.",
-        status: DriverResponseStatus.UNKNOWN_ERR,
+        status: ResponseStatus.UNKNOWN_ERR,
       };
     } finally {
       await loadingStore.setLoading(false);
