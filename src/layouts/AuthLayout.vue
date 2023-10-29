@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { IonPage, IonContent } from "@ionic/vue";
 </script>
 
 <template>
-  <IonPage>
-    <IonContent class="auth-layout font-bricolage">
-      <slot></slot>
-    </IonContent>
-  </IonPage>
+  <div>
+    <router-view></router-view>
+  </div>
 </template>

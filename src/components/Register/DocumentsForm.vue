@@ -1,13 +1,4 @@
 <script setup lang="ts">
-import Message from "../UI/Message.vue";
-import {
-  IonButton,
-  IonIcon,
-  IonText,
-  loadingController,
-  toastController,
-} from "@ionic/vue";
-import { folderOpenOutline } from "ionicons/icons";
 import { useAuth } from "@/stores/auth";
 import { computed, ref } from "vue";
 import { useLoading } from "@/stores/loading";
@@ -60,11 +51,7 @@ const pushFile = (
 };
 
 const action = async () => {
-  const loading = await loadingController.create({
-    message: "Ma'lumotlaringiz jo'natilmoqda",
-  });
-
-  await loading.present();
+  // show loading
   try {
     const result = await authStore.register({
       driver: authStore.driver,
@@ -73,27 +60,14 @@ const action = async () => {
     });
 
     if (result.status === ResponseStatus.AUTH_WARNING) {
-      await loading.dismiss();
-      const toast = await toastController.create({
-        message: result.msg,
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            role: "cancel",
-            handler: async () => {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
+      // dismiss loading
 
-      await toast.present();
+      // show error with toast
 
       return;
     }
 
-    if (result.status === ResponseStatus.REGISTRATION_DONE) {
+    if (result.status === ResponseStatus.DRIVER_REGISTRATION_DONE) {
       const sendingPictures = await authInstance.post(
         `/send-images/${result.oneId}/${authStore.plainPass}`,
         formData,
@@ -106,69 +80,24 @@ const action = async () => {
       );
 
       if (!sendingPictures) {
-        await loading.dismiss();
+        // dismiss loading
 
-        const warningToast = await toastController.create({
-          message:
-            "Rasmlarni yuborishda muammo. Internetingizni tekshirib boshqatdan urinib ko'ring.",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              role: "cancel",
-              handler: async () => {
-                await warningToast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await warningToast.present();
+        // show error with toast
 
         return;
       }
 
       if (sendingPictures.data.status !== ResponseStatus.IMAGES_SENT) {
-        await loading.dismiss();
+        // dismiss loading
 
-        const warningToast = await toastController.create({
-          message:
-            sendingPictures.data.msg ||
-            "Rasmlarni yuborishda muammo. Boshqatdan urinib ko'ring",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              role: "cancel",
-              handler: async () => {
-                await warningToast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await warningToast.present();
+        // show error with toast
 
         return;
       }
 
-      await loading.dismiss();
+      // dismiss loading
 
-      const toast = await toastController.create({
-        message: result.msg,
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            role: "cancel",
-            handler: async () => {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await toast.present();
+      // show error with toast
 
       setTimeout(() => {
         router.push("/validation-waiting");
@@ -178,66 +107,25 @@ const action = async () => {
     }
 
     if (result.status === ResponseStatus.UNKNOWN_ERR) {
-      await loading.dismiss();
+      // dismiss loading
 
-      const toast = await toastController.create({
-        message: result.msg,
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            role: "cancel",
-            handler: async () => {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await toast.present();
+      // show error with toast
 
       return;
     }
   } catch (error: any) {
-    await loading.dismiss();
+    // dismiss loading
 
     if (!error.response) {
-      const toast = await toastController.create({
-        message: "Internetingiz bilan aloqa mavjudligini tekshirib ko'ring",
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            role: "cancel",
-            handler: async () => {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await toast.present();
+      // show error with toast
 
       return;
     }
-    const toast = await toastController.create({
-      message: error.message,
-      duration: 4000,
-      buttons: [
-        {
-          text: "OK",
-          role: "cancel",
-          handler: async () => {
-            await toast.dismiss();
-          },
-        },
-      ],
-    });
+    // show error with toast
 
-    await toast.present();
     return;
   } finally {
-    await loading.dismiss();
+    // dismiss loading
   }
 };
 
@@ -251,155 +139,7 @@ const disableButton = computed(() => {
 </script>
 
 <template>
-  <div class="car-form container mx-auto sm:px-4 px-2">
-    <Message class="py-3 leading-relaxed"
-      >Haydovchilik guvohnomangiz va avtomobilning texnik pasportini har
-      ikkalasining ham old va orqa tomonlarini rasmga olib tegishli maydonlarga
-      yuklang. Qabul qilinadigan formatlar: JPEG, PNG</Message
-    >
-    <div class="form my-4 space-y-6">
-      <div class="first-part">
-        <IonText class="text-xl">Haydovchilik guvohnomasi</IonText>
-        <div class="parts flex mt-2 flex-wrap">
-          <div class="front">
-            <IonButton
-              @click="() => pravaFront?.click()"
-              class="font-semibold"
-              color="light"
-            >
-              <IonIcon
-                class="mr-3"
-                slot="start"
-                :icon="folderOpenOutline"
-              ></IonIcon>
-              Old tomon
-            </IonButton>
-            <p class="text-sm opacity-50" v-if="pravaFrontImg">Rasm tanlandi</p>
-            <input
-              @change="(e:any) => pushFile(e.target.files[0], 'pFront')"
-              hidden
-              ref="pravaFront"
-              type="file"
-              accept=".png, .jpg"
-            />
-          </div>
-          <div class="back">
-            <IonButton
-              @click="() => pravaBack?.click()"
-              class="font-semibold"
-              color="light"
-            >
-              <IonIcon
-                class="mr-3"
-                slot="start"
-                :icon="folderOpenOutline"
-              ></IonIcon>
-              Orqa tomon
-            </IonButton>
-            <p class="text-sm opacity-50" v-if="pravaBackImg">Rasm tanlandi</p>
-            <input
-              @change="(e:any) => pushFile(e.target.files[0], 'pBack')"
-              hidden
-              ref="pravaBack"
-              type="file"
-              accept=".png, .jpg"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="first-part">
-        <IonText class="text-xl">Avtomobil pasporti</IonText>
-        <div class="parts flex mt-2 flex-wrap">
-          <div class="front">
-            <IonButton
-              @click="() => texFront?.click()"
-              class="font-semibold"
-              color="light"
-            >
-              <IonIcon
-                class="mr-3"
-                slot="start"
-                :icon="folderOpenOutline"
-              ></IonIcon>
-              Old tomon
-            </IonButton>
-            <p class="text-sm opacity-50" v-if="texFrontImg">Rasm tanlandi</p>
-            <input
-              @change="(e:any) => pushFile(e.target.files[0], 'tFront')"
-              hidden
-              ref="texFront"
-              type="file"
-              accept=".png, .jpg"
-            />
-          </div>
-          <div class="back">
-            <IonButton
-              @click="() => texBack?.click()"
-              class="font-semibold"
-              color="light"
-            >
-              <IonIcon
-                class="mr-3"
-                slot="start"
-                :icon="folderOpenOutline"
-              ></IonIcon>
-              Orqa tomon
-            </IonButton>
-            <p class="text-sm opacity-50" v-if="texBackImg">Rasm tanlandi</p>
-            <input
-              @change="(e:any) => pushFile(e.target.files[0], 'tBack')"
-              hidden
-              ref="texBack"
-              type="file"
-              accept=".png, .jpg"
-            />
-          </div>
-        </div>
-      </div>
-      <div class="buttons">
-        <IonButton
-          id="loading-trigger"
-          :disabled="disableButton"
-          @click="action"
-          class="default-btn w-full font-bold uppercase"
-          type="button"
-          >Jo'natish
-        </IonButton>
-        <IonButton
-          @click="events('back')"
-          class="w-full font-bold uppercase"
-          type="button"
-          fill="outline"
-          >Orqaga</IonButton
-        >
-      </div>
-    </div>
-  </div>
+  <div>Documents form</div>
 </template>
 
-<style scoped>
-@media (prefers-color-scheme: dark) {
-  .default-btn {
-    color: white;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .default-btn {
-    color: black;
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  .my-border {
-    @apply border-gray-200;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .my-border {
-    @apply border-neutral-700;
-  }
-}
-</style>
-@/stores/auth/auth
+<style scoped></style>

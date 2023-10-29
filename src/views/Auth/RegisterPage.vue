@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import AuthLayout from "@/layouts/AuthLayout.vue";
-import { IonChip } from "@ionic/vue";
 import { defineAsyncComponent, ref } from "vue";
 
 const CarForm = defineAsyncComponent(() => {
@@ -33,17 +32,15 @@ const minusStep = () => {
 </script>
 
 <template>
-  <AuthLayout>
-    <div
-      class="component-controller h-screen flex flex-col items-center justify-evenly"
-    >
-      <img src="../../resources/compuss-logo.svg" />
-      <DriverForm @next="addStep" v-if="step === 1" />
-      <CarForm @next="addStep" @back="minusStep" v-if="step === 2" />
-      <DocumentsForm @next="addStep" @back="minusStep" v-if="step === 3" />
-      <IonChip class="mt-2 text-sm">{{ step }}/3</IonChip>
-    </div>
-  </AuthLayout>
+  <div
+    class="component-controller h-screen flex flex-col items-center justify-evenly"
+  >
+    <img src="../../resources/compuss-logo.svg" />
+    <DriverForm @next="addStep" v-if="step === 1" />
+    <CarForm @next="addStep" @back="minusStep" v-if="step === 2" />
+    <DocumentsForm @next="addStep" @back="minusStep" v-if="step === 3" />
+    <div class="mt-2 text-sm">{{ step }}/3</div>
+  </div>
 </template>
 
 <style>

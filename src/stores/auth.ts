@@ -9,7 +9,6 @@ import {
 import { authInstance } from "@/http";
 import { Preferences } from "@capacitor/preferences";
 import { useLoading } from "./loading";
-import { loadingController, toastController } from "@ionic/vue";
 import { useRouter } from "vue-router";
 import { ResponseStatus } from "@/constants";
 import { UniversalResponseStatus } from "@/constants";
@@ -129,7 +128,8 @@ export const useAuth = defineStore("auth-store", () => {
       }
 
       if (
-        sendingDriverInfo.data.status === ResponseStatus.REGISTRATION_DONE
+        sendingDriverInfo.data.status ===
+        ResponseStatus.DRIVER_REGISTRATION_DONE
       ) {
         await Promise.allSettled([
           Preferences.set({
@@ -153,7 +153,7 @@ export const useAuth = defineStore("auth-store", () => {
 
         return {
           msg: sendingDriverInfo.data.msg,
-          status: ResponseStatus.REGISTRATION_DONE,
+          status: ResponseStatus.DRIVER_REGISTRATION_DONE,
           oneId: sendingDriverInfo.data.driver.oneId,
           password: driver.value.password,
         };
@@ -190,11 +190,8 @@ export const useAuth = defineStore("auth-store", () => {
   }) {
     await loadingStore.setLoading(true);
 
-    const loading = await loadingController.create({
-      message: "Tekshirilmoqda...",
-    });
+    // show loading
 
-    await loading.present();
     try {
       const res = await authInstance.get(`/check-validation/${payload.oneId}`, {
         headers: { Authorization: `Bearer ${payload.token}` },
@@ -415,7 +412,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
     } catch (error: any) {
-      await loading.dismiss();
+      // dismiss loading
 
       console.log(error);
 
@@ -423,39 +420,13 @@ export const useAuth = defineStore("auth-store", () => {
         error.message === "Network Error" ||
         error.message.includes("timeout")
       ) {
-        const newToast = await toastController.create({
-          message: "Serverda xatolik, yoki internet bilan aloqa mavjud emas.",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await newToast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await newToast.present();
+        // show error with toast
 
         return;
       }
 
       // Handle other unknown errors
-      const newToast = await toastController.create({
-        message: "Noma'lum xatolik sodir bo'ldi, boshqatdan urinib ko'ring",
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await newToast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await newToast.present();
+      // show error with toast
 
       return;
     } finally {
@@ -472,22 +443,9 @@ export const useAuth = defineStore("auth-store", () => {
         headers: { Authorization: `Bearer ${payload.token}` },
       });
 
-      const toastModal = await toastController.create({
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await toastModal.dismiss();
-            },
-          },
-        ],
-      });
-
       if (res.status >= 400) {
-        alert(res.status)
-        toastModal.message = `Server bilan aloqa mavjud emas, internetingizni tekshirib boshqatdan urinib ko'ring`;
-        await toastModal.present();
+        // show error with toast
+
         return;
       }
 
@@ -497,9 +455,8 @@ export const useAuth = defineStore("auth-store", () => {
         res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
         res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID
       ) {
-        toastModal.message =
-          "Ma'lumotlaringiz topilmadi, yoki yaroqsiz. Boshqatdan ro'yxatdan o'ting";
-        await toastModal.present();
+        // show error with toast
+
         await Preferences.clear();
 
         setTimeout(() => {
@@ -508,9 +465,9 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === ResponseStatus.DRIVER_BANNED) {
-        toastModal.message = "Sizning akkauntingiz bloklandi.";
-        await toastModal.present();
+      if (res.data.status === ResponseStatus.BANNED) {
+        // show error with toast
+
         await Promise.allSettled([
           Preferences.set({ key: "banned", value: "true" }),
           Preferences.remove({ key: "validation" }),
@@ -522,9 +479,8 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === ResponseStatus.LOGIN_FAILED) {
-        toastModal.message = "Tizimdan foydalanishga sizda imkoniyat yo'q";
-        await toastModal.present();
+      if (res.data.status === ResponseStatus.DRIVER_LOGIN_FAILED) {
+        // show error with toast
 
         await Promise.allSettled([
           Preferences.set({
@@ -536,7 +492,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === ResponseStatus.LOGIN_DONE) {
+      if (res.data.status === ResponseStatus.DRIVER_LOGIN_DONE) {
         await Promise.allSettled([
           Preferences.set({
             key: "validation",
@@ -556,38 +512,12 @@ export const useAuth = defineStore("auth-store", () => {
         error.message === "Network Error" ||
         error.message.includes("timeout")
       ) {
-        const newToast = await toastController.create({
-          message: "Serverda xatolik, yoki internet bilan aloqa mavjud emas.",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await newToast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await newToast.present();
+        // show error with toast
 
         return;
       }
 
-      const newToast = await toastController.create({
-        message: "Noma'lum xatolik yuz berdi, birozdan keyin urinib ko'ring",
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await newToast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await newToast.present();
+      // show error with toast
     }
   }
 

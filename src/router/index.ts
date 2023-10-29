@@ -1,6 +1,5 @@
 import { Preferences } from "@capacitor/preferences";
-import { createRouter, createWebHistory } from "@ionic/vue-router";
-import { RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import { DriverValidation } from "@/constants";
 
 const routes: Array<RouteRecordRaw> = [
