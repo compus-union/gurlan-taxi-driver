@@ -3,7 +3,6 @@ import AuthLayout from "@/layouts/AuthLayout.vue";
 import { computed, onBeforeMount, ref } from "vue";
 import { useAuth } from "@/stores/auth";
 import { Preferences } from "@capacitor/preferences";
-import Message from "@/components/UI/Message.vue";
 import { vMaska } from "maska";
 import { vUppercase } from "@/directives/uppercase";
 import {

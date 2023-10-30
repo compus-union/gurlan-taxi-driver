@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Message from "../UI/Message.vue";
 import { useAuth } from "@/stores/auth";
 import { computed } from "vue";
 import { vUppercase } from "@/directives/uppercase";

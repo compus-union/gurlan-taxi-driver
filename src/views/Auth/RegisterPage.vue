@@ -35,7 +35,6 @@ const minusStep = () => {
   <div
     class="component-controller h-screen flex flex-col items-center justify-evenly"
   >
-    <img src="../../resources/compuss-logo.svg" />
     <DriverForm @next="addStep" v-if="step === 1" />
     <CarForm @next="addStep" @back="minusStep" v-if="step === 2" />
     <DocumentsForm @next="addStep" @back="minusStep" v-if="step === 3" />
@@ -51,6 +50,6 @@ const minusStep = () => {
 
 .fade-enter-from,
 .fade-leave-to {
-  opacity: 0;
+  opacity: 0; 
 }
 </style>

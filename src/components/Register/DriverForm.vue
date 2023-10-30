@@ -1,8 +1,27 @@
 <script setup lang="ts">
 import { useAuth } from "@/stores/auth";
-import { computed, ref } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
 import { vMaska } from "maska";
 import { MaskInputOptions } from "maska";
+
+const Card = defineAsyncComponent(() => {
+  return import("@/components/ui/card/Card.vue");
+});
+const CardContent = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardContent.vue");
+});
+const CardDescription = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardDescription.vue");
+});
+const CardFooter = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardFooter.vue");
+});
+const CardHeader = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardHeader.vue");
+});
+const CardTitle = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardTitle.vue");
+});
 
 const authStore = useAuth();
 
@@ -47,9 +66,16 @@ const maskOptions = ref({
 </script>
 
 <template>
-  <div>Driver form</div>
+  <div class="driver-form">
+    <Card class="bg-primary text-warning-foreground">
+      <CardHeader>
+        <CardTitle>Card Title</CardTitle>
+        <CardDescription>Card Description</CardDescription>
+      </CardHeader>
+      <CardContent> Card Content </CardContent>
+      <CardFooter> Card Footer </CardFooter>
+    </Card>
+  </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
