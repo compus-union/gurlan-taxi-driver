@@ -3,7 +3,7 @@
 <template>
   <div class="auth-layout">
     <router-view v-slot="{ Component }">
-      <transition name="scale-slide">
+      <transition name="scale-slide" mode="out-in">
         <component :is="Component" />
       </transition>
     </router-view>

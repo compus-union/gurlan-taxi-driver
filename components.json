@@ -5,7 +5,7 @@
     "config": "tailwind.config.js",
     "css": "src/theme/base.css",
     "baseColor": "neutral",
-    "cssVariables": true
+    "cssVariables": false
   },
   "framework": "vite",
   "aliases": {

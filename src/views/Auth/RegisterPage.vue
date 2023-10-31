@@ -14,6 +14,10 @@ const DocumentsForm = defineAsyncComponent(() => {
   return import("@/components/Register/DocumentsForm.vue");
 });
 
+const Badge = defineAsyncComponent(() => {
+  return import("@/components/ui/badge/Badge.vue");
+});
+
 const step = ref(1);
 
 const addStep = () => {
@@ -33,16 +37,17 @@ const minusStep = () => {
 
 <template>
   <div
-    class="component-controller h-screen flex flex-col items-center justify-evenly"
+    class="component-controller relative h-screen flex flex-col items-center justify-evenly"
   >
     <DriverForm @next="addStep" v-if="step === 1" />
     <CarForm @next="addStep" @back="minusStep" v-if="step === 2" />
     <DocumentsForm @next="addStep" @back="minusStep" v-if="step === 3" />
-    <div class="mt-2 text-sm">{{ step }}/3</div>
+    <!-- <Badge class="suit-theme badge absolute bottom-4">{{ step }}/3</Badge> -->
   </div>
 </template>
 
-<style>
+<style scoped>
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;
@@ -50,6 +55,6 @@ const minusStep = () => {
 
 .fade-enter-from,
 .fade-leave-to {
-  opacity: 0; 
+  opacity: 0;
 }
 </style>

@@ -3,6 +3,7 @@ import { useAuth } from "@/stores/auth";
 import { computed, defineAsyncComponent, ref } from "vue";
 import { vMaska } from "maska";
 import { MaskInputOptions } from "maska";
+import { InfoIcon } from "lucide-vue-next";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
@@ -13,14 +14,32 @@ const CardContent = defineAsyncComponent(() => {
 const CardDescription = defineAsyncComponent(() => {
   return import("@/components/ui/card/CardDescription.vue");
 });
-const CardFooter = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardFooter.vue");
-});
 const CardHeader = defineAsyncComponent(() => {
   return import("@/components/ui/card/CardHeader.vue");
 });
 const CardTitle = defineAsyncComponent(() => {
   return import("@/components/ui/card/CardTitle.vue");
+});
+const Input = defineAsyncComponent(() => {
+  return import("@/components/ui/input/Input.vue");
+});
+const Label = defineAsyncComponent(() => {
+  return import("@/components/ui/label/Label.vue");
+});
+const Button = defineAsyncComponent(() => {
+  return import("@/components/ui/button/Button.vue");
+});
+const Alert = defineAsyncComponent(() => {
+  return import("@/components/ui/alert/Alert.vue");
+});
+const AlertTitle = defineAsyncComponent(() => {
+  return import("@/components/ui/alert/AlertTitle.vue");
+});
+const AlertDescription = defineAsyncComponent(() => {
+  return import("@/components/ui/alert/AlertDescription.vue");
+});
+const Checkbox = defineAsyncComponent(() => {
+  return import("@/components/ui/checkbox/Checkbox.vue");
 });
 
 const authStore = useAuth();
@@ -66,15 +85,72 @@ const maskOptions = ref({
 </script>
 
 <template>
-  <div class="driver-form">
+  <div class="driver-form px-4">
     <Card class="bg-primary text-warning-foreground">
       <CardHeader>
-        <CardTitle>Card Title</CardTitle>
-        <CardDescription>Card Description</CardDescription>
+        <CardTitle>Ro'yxatdan o'tish</CardTitle>
+        <CardDescription
+          >Agarda ro'yxatdan o'tishda ba'zi muammolarga duch kelsangiz, pastdagi
+          telefon raqamlarimizga murojaat qilishingiz mumkin.</CardDescription
+        >
       </CardHeader>
-      <CardContent> Card Content </CardContent>
-      <CardFooter> Card Footer </CardFooter>
+      <CardContent class="space-y-4">
+        <div class="form-group">
+          <Label for="fullname">Ism familiya</Label>
+          <Input
+            v-model:model-value.trim.lazy="authStore.driver.fullname"
+            id="fullname"
+            type="text"
+            v-maska:[maskOptions]
+            placeholder="Sardor Aminov"
+          />
+        </div>
+        <div class="form-group">
+          <Label for="phone">Telefon raqam</Label>
+          <Input
+            v-model:model-value.trim.lazy="authStore.driver.phone[0]"
+            id="phone"
+            type="text"
+            v-maska
+            data-maska="+998 ## ### ## ##"
+            placeholder="+998"
+          />
+        </div>
+        <div class="form-group">
+          <Label for="password">Parol</Label>
+          <Input
+            v-model:model-value.trim.lazy="authStore.driver.password"
+            id="password"
+            :type="showPass ? 'text' : 'password'"
+            placeholder="******"
+          />
+        </div>
+        <div class="form-group flex items-center space-x-4">
+          <Checkbox
+            v-model:checked="showPass"
+            class="suit-theme-checkbox"
+            id="showPass"
+          />
+          <Label for="showPass"> Parolni ko'rsatish </Label>
+        </div>
+        <Button
+          @click="events('next')"
+          :disabled="disableButton"
+          class="w-full suit-theme"
+          type="button"
+        >
+          Keyingisi
+        </Button>
+      </CardContent>
     </Card>
+    <Alert class="mt-4">
+      <InfoIcon class="w-4 h-4" />
+      <AlertDescription>
+        Ro'yxatdan o'tishda muammolarga duch kelsangiz, pastdagi telefon
+        raqamlari orqali bizga murojaat qilishingiz mumkin.
+      </AlertDescription>
+      <AlertDescription> +998 99 994 76 13 </AlertDescription>
+    </Alert>
   </div>
 </template>
 
