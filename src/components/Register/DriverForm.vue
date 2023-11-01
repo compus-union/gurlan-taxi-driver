@@ -3,7 +3,6 @@ import { useAuth } from "@/stores/auth";
 import { computed, defineAsyncComponent, ref } from "vue";
 import { vMaska } from "maska";
 import { MaskInputOptions } from "maska";
-import { InfoIcon } from "lucide-vue-next";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
@@ -28,15 +27,6 @@ const Label = defineAsyncComponent(() => {
 });
 const Button = defineAsyncComponent(() => {
   return import("@/components/ui/button/Button.vue");
-});
-const Alert = defineAsyncComponent(() => {
-  return import("@/components/ui/alert/Alert.vue");
-});
-const AlertTitle = defineAsyncComponent(() => {
-  return import("@/components/ui/alert/AlertTitle.vue");
-});
-const AlertDescription = defineAsyncComponent(() => {
-  return import("@/components/ui/alert/AlertDescription.vue");
 });
 const Checkbox = defineAsyncComponent(() => {
   return import("@/components/ui/checkbox/Checkbox.vue");
@@ -85,7 +75,7 @@ const maskOptions = ref({
 </script>
 
 <template>
-  <div class="driver-form px-4">
+  <div class="driver-form">
     <Card class="bg-primary text-warning-foreground">
       <CardHeader>
         <CardTitle>Ro'yxatdan o'tish</CardTitle>
@@ -98,6 +88,7 @@ const maskOptions = ref({
         <div class="form-group">
           <Label for="fullname">Ism familiya</Label>
           <Input
+            required
             v-model:model-value.trim.lazy="authStore.driver.fullname"
             id="fullname"
             type="text"
@@ -111,6 +102,7 @@ const maskOptions = ref({
             v-model:model-value.trim.lazy="authStore.driver.phone[0]"
             id="phone"
             type="text"
+            required
             v-maska
             data-maska="+998 ## ### ## ##"
             placeholder="+998"
@@ -119,6 +111,7 @@ const maskOptions = ref({
         <div class="form-group">
           <Label for="password">Parol</Label>
           <Input
+            required
             v-model:model-value.trim.lazy="authStore.driver.password"
             id="password"
             :type="showPass ? 'text' : 'password'"
@@ -143,14 +136,6 @@ const maskOptions = ref({
         </Button>
       </CardContent>
     </Card>
-    <Alert class="mt-4">
-      <InfoIcon class="w-4 h-4" />
-      <AlertDescription>
-        Ro'yxatdan o'tishda muammolarga duch kelsangiz, pastdagi telefon
-        raqamlari orqali bizga murojaat qilishingiz mumkin.
-      </AlertDescription>
-      <AlertDescription> +998 99 994 76 13 </AlertDescription>
-    </Alert>
   </div>
 </template>
 
