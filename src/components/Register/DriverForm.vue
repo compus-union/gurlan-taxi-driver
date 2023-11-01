@@ -1,10 +1,36 @@
 <script setup lang="ts">
-import Message from "../UI/Message.vue";
-import { IonButton, IonCheckbox, IonText } from "@ionic/vue";
 import { useAuth } from "@/stores/auth";
-import { computed, ref } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
 import { vMaska } from "maska";
 import { MaskInputOptions } from "maska";
+
+const Card = defineAsyncComponent(() => {
+  return import("@/components/ui/card/Card.vue");
+});
+const CardContent = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardContent.vue");
+});
+const CardDescription = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardDescription.vue");
+});
+const CardHeader = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardHeader.vue");
+});
+const CardTitle = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardTitle.vue");
+});
+const Input = defineAsyncComponent(() => {
+  return import("@/components/ui/input/Input.vue");
+});
+const Label = defineAsyncComponent(() => {
+  return import("@/components/ui/label/Label.vue");
+});
+const Button = defineAsyncComponent(() => {
+  return import("@/components/ui/button/Button.vue");
+});
+const Checkbox = defineAsyncComponent(() => {
+  return import("@/components/ui/checkbox/Checkbox.vue");
+});
 
 const authStore = useAuth();
 
@@ -49,88 +75,68 @@ const maskOptions = ref({
 </script>
 
 <template>
-  <div class="driver-form container mx-auto sm:px-4 px-2">
-    <Message> Iltimos, lotinchada yozing </Message>
-    <div class="form border my-border rounded p-4 mt-4">
-      <IonText class="text-xl font-bold"> Haydovchi ma’lumotlari</IonText>
-      <div class="groups mt-4 space-y-3">
-        <div class="form-group flex flex-col items-start">
-          <label class="mb-1" for="fullname">Ism familiya</label>
-          <input
-            autocomplete="off"
+  <div class="driver-form">
+    <Card class="bg-primary text-warning-foreground">
+      <CardHeader>
+        <CardTitle>Ro'yxatdan o'tish</CardTitle>
+        <CardDescription
+          >Agarda ro'yxatdan o'tishda ba'zi muammolarga duch kelsangiz, pastdagi
+          telefon raqamlarimizga murojaat qilishingiz mumkin.</CardDescription
+        >
+      </CardHeader>
+      <CardContent class="space-y-4">
+        <div class="form-group">
+          <Label for="fullname">Ism familiya</Label>
+          <Input
             required
-            v-model.trim="authStore.driver.fullname"
-            class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
-            type="text"
-            placeholder="Sardor Aminov"
+            v-model:model-value.trim.lazy="authStore.driver.fullname"
             id="fullname"
-            v-maska:[maskOptions]
-          />
-        </div>
-        <div class="form-group flex flex-col items-start">
-          <label class="mb-1" for="phone">Telefon raqamingiz</label>
-          <input
-            required
-            v-model.trim="authStore.driver.phone[0]"
-            class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
             type="text"
-            placeholder="+998"
-            id="phone"
-            v-maska
-            data-maska="+998 ## ### ## ##"
-          />
-        </div>
-        <div class="form-group flex flex-col items-start">
-          <label class="mb-1" for="password">Parolingiz</label>
-          <input
-            required
-            v-model.trim="authStore.driver.password"
-            class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
-            :type="showPass ? 'text' : 'password'"
-            placeholder="*****"
-            id="password"
+            v-maska:[maskOptions]
+            placeholder="Sardor Aminov"
           />
         </div>
         <div class="form-group">
-          <IonCheckbox v-model="showPass" label-placement="end"
-            >Parolni ko'rsatish</IonCheckbox
-          >
+          <Label for="phone">Telefon raqam</Label>
+          <Input
+            v-model:model-value.trim.lazy="authStore.driver.phone[0]"
+            id="phone"
+            type="text"
+            required
+            v-maska
+            data-maska="+998 ## ### ## ##"
+            placeholder="+998"
+          />
         </div>
-        <IonButton
-          :disabled="disableButton"
+        <div class="form-group">
+          <Label for="password">Parol</Label>
+          <Input
+            required
+            v-model:model-value.trim.lazy="authStore.driver.password"
+            id="password"
+            :type="showPass ? 'text' : 'password'"
+            placeholder="******"
+          />
+        </div>
+        <div class="form-group flex items-center space-x-4">
+          <Checkbox
+            v-model:checked="showPass"
+            class="suit-theme-checkbox"
+            id="showPass"
+          />
+          <Label for="showPass"> Parolni ko'rsatish </Label>
+        </div>
+        <Button
           @click="events('next')"
-          class="default-btn w-full font-bold uppercase"
+          :disabled="disableButton"
+          class="w-full suit-theme"
           type="button"
-          >Keyingisi
-        </IonButton>
-      </div>
-    </div>
+        >
+          Keyingisi
+        </Button>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
-<style scoped>
-@media (prefers-color-scheme: dark) {
-  .default-btn {
-    color: white;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .default-btn {
-    color: black;
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  .my-border {
-    @apply border-gray-200;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .my-border {
-    @apply border-neutral-700;
-  }
-}
-</style>
-@/stores/auth/auth
+<style scoped></style>

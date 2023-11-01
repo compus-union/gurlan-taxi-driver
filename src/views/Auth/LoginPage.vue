@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import { IonText, IonButton, IonCheckbox, toastController } from "@ionic/vue";
 import AuthLayout from "@/layouts/AuthLayout.vue";
 import { computed, onBeforeMount, ref } from "vue";
 import { useAuth } from "@/stores/auth";
 import { Preferences } from "@capacitor/preferences";
-import Message from "@/components/UI/Message.vue";
 import { vMaska } from "maska";
 import { vUppercase } from "@/directives/uppercase";
 import {
-  DriverResponseStatus,
+  ResponseStatus,
   DriverValidation,
   UniversalResponseStatus,
 } from "@/constants";
 import { useLoading } from "@/stores/loading";
 import router from "@/router";
-import { authInstance } from "@/http";
-import { key } from "ionicons/icons";
 
 const authStore = useAuth();
 const loadingStore = useLoading();
@@ -51,26 +47,13 @@ const action = async () => {
       password: authStore.driver.password,
     });
 
-    const toast = await toastController.create({
-      message: result.msg,
-      duration: 10000,
-      buttons: [
-        {
-          text: "OK",
-          async handler() {
-            await toast.dismiss();
-          },
-        },
-      ],
-    });
+    // show error with toast
 
-    await toast.present();
-
-    if (result.status === DriverResponseStatus.AUTH_WARNING) {
+    if (result.status === ResponseStatus.AUTH_WARNING) {
       return;
     }
 
-    if (result.status === DriverResponseStatus.DRIVER_BANNED) {
+    if (result.status === ResponseStatus.BANNED) {
       await Promise.allSettled([
         Preferences.remove({ key: "validation" }),
         Preferences.set({ key: "banned", value: "true" }),
@@ -80,7 +63,7 @@ const action = async () => {
       return;
     }
 
-    if (result.status === DriverResponseStatus.VALIDATION_FAILED) {
+    if (result.status === ResponseStatus.VALIDATION_FAILED) {
       await Promise.allSettled([
         Preferences.remove({ key: "banned" }),
         Preferences.set({
@@ -93,7 +76,7 @@ const action = async () => {
       return;
     }
 
-    if (result.status === DriverResponseStatus.VALIDATION_WAITING) {
+    if (result.status === ResponseStatus.VALIDATION_WAITING) {
       await Promise.allSettled([
         Preferences.remove({ key: "banned" }),
         Preferences.set({
@@ -110,20 +93,20 @@ const action = async () => {
       return;
     }
 
-    if (result.status === DriverResponseStatus.DRIVER_NOT_FOUND) {
+    if (result.status === ResponseStatus.DRIVER_NOT_FOUND) {
       await Promise.allSettled([Preferences.clear(), router.push("/register")]);
       return;
     }
 
     if (
-      result.status === DriverResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
-      result.status === DriverResponseStatus.DRIVER_TOKEN_NOT_VALID ||
-      result.status === DriverResponseStatus.HEADERS_NOT_FOUND
+      result.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
+      result.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID ||
+      result.status === ResponseStatus.HEADERS_NOT_FOUND
     ) {
       return;
     }
 
-    if (result.status === DriverResponseStatus.LOGIN_DONE) {
+    if (result.status === ResponseStatus.DRIVER_LOGIN_DONE) {
       await Promise.allSettled([
         Preferences.set({ key: "validation", value: DriverValidation.SUCCESS }),
         Preferences.set({ key: "driverOneId", value: result.oneId }),
@@ -141,105 +124,70 @@ const action = async () => {
     }
   } catch (error: any) {
     if (!error.response) {
-      const toast = await toastController.create({
-        message: "Serverda xatolik, boshqatdan yoki keyinroq urinib ko'ring.",
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await toast.present();
+      // show error with toast
       return;
     }
-    const toast = await toastController.create({
-      message:
-        error.response.data.msg ||
-        error.message ||
-        "Serverda xatolik, boshqatdan yoki keyinroq urinib ko'ring.",
-      duration: 4000,
-      buttons: [
-        {
-          text: "OK",
-          async handler() {
-            await toast.dismiss();
-          },
-        },
-      ],
-    });
+    // show error with toast
 
-    await toast.present();
     return;
   }
 };
 </script>
 
 <template>
-  <AuthLayout>
-    <div
-      class="login-page container mx-auto sm:px-4 px-2 flex items-center justify-center h-screen"
-    >
-      <div class="wrapper">
-        <Message>
-          Sizga berilgan One Id va o'zingiz kiritgan parolni yozing.
-        </Message>
-        <div class="form border my-border rounded p-4 mt-4">
-          <IonText class="text-xl font-bold">Tizimga kirish</IonText>
-          <div class="groups mt-4 space-y-3">
-            <div class="form-group flex flex-col items-start">
-              <label class="mb-1" for="oneId">One Id</label>
-              <input
-                autocomplete="off"
-                required
-                v-model.trim="authStore.driver.oneId"
-                class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
-                type="text"
-                placeholder="One Id"
-                id="oneId"
-                v-maska
-                v-uppercase
-                data-maska="@@#######"
-              />
-            </div>
-            <div class="form-group flex flex-col items-start">
-              <label class="mb-1" for="password">Parolingiz</label>
-              <input
-                required
-                v-model.trim="authStore.driver.password"
-                class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
-                :type="showPass ? 'text' : 'password'"
-                placeholder="*****"
-                id="password"
-              />
-            </div>
-            <div class="form-group">
-              <IonCheckbox v-model="showPass" label-placement="end"
-                >Parolni ko'rsatish</IonCheckbox
-              >
-            </div>
-            <IonButton
-              @click="action"
-              :disabled="loadingStore.loading || disableButton"
-              class="default-btn w-full font-bold uppercase"
-              type="button"
-              >KIRISH
-            </IonButton>
+  <div
+    class="login-page container mx-auto sm:px-4 px-2 flex items-center justify-center h-screen"
+  >
+    <div class="wrapper">
+      <div class="form border my-border rounded p-4 mt-4">
+        <h5 class="text-xl font-bold">Tizimga kirish</h5>
+        <div class="groups mt-4 space-y-3">
+          <div class="form-group flex flex-col items-start">
+            <label class="mb-1" for="oneId">One Id</label>
+            <input
+              autocomplete="off"
+              required
+              v-model.trim="authStore.driver.oneId"
+              class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
+              type="text"
+              placeholder="One Id"
+              id="oneId"
+              v-maska
+              v-uppercase
+              data-maska="@@#######"
+            />
           </div>
+          <div class="form-group flex flex-col items-start">
+            <label class="mb-1" for="password">Parolingiz</label>
+            <input
+              required
+              v-model.trim="authStore.driver.password"
+              class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
+              :type="showPass ? 'text' : 'password'"
+              placeholder="*****"
+              id="password"
+            />
+          </div>
+          <div class="form-group">
+            <div>Parolni ko'rsatish</div>
+          </div>
+          <button
+            @click="action"
+            :disabled="loadingStore.loading || disableButton"
+            class="default-btn w-full font-bold uppercase"
+            type="button"
+          >
+            KIRISH
+          </button>
         </div>
-        <Message class="mt-4"
-          >Agar tizimga kirishda muammolarga duch kelayotgan bo'lsangiz,
-          quyidagi raqamlarga murojaat qiling: <br />
-          <br />
-          +998 99 944 76 13 <br />
-          +998 95 171 31 47</Message
-        >
+      </div>
+      <div class="mt-4">
+        Agar tizimga kirishda muammolarga duch kelayotgan bo'lsangiz, quyidagi
+        raqamlarga murojaat qiling: <br />
+        <br />
+        +998 99 944 76 13 <br />
+        +998 95 171 31 47
       </div>
     </div>
-  </AuthLayout>
+  </div>
 </template>
-@/stores/auth/auth

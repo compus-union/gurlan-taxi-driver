@@ -2,3 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+@media (prefers-color-scheme: dark) {
+  .suit-theme {
+    color: #121212;
+    background: white;
+  }
+  .suit-theme-checkbox {
+    border: 1px solid white;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .suit-theme {
+    color: #fff;
+    background: black;
+  }
+  .suit-theme-checkbox {
+    border: 1px solid black;
+  }
+}
+
+
+
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}

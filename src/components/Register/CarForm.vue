@@ -1,9 +1,34 @@
 <script setup lang="ts">
-import Message from "../UI/Message.vue";
-import { IonButton, IonText } from "@ionic/vue";
 import { useAuth } from "@/stores/auth";
-import { computed } from "vue";
+import { computed, defineAsyncComponent, watch } from "vue";
 import { vUppercase } from "@/directives/uppercase";
+import { vMaska } from "maska";
+import { TreesIcon } from "lucide-vue-next";
+
+const Card = defineAsyncComponent(() => {
+  return import("@/components/ui/card/Card.vue");
+});
+const CardContent = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardContent.vue");
+});
+const CardDescription = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardDescription.vue");
+});
+const CardHeader = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardHeader.vue");
+});
+const CardTitle = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardTitle.vue");
+});
+const Input = defineAsyncComponent(() => {
+  return import("@/components/ui/input/Input.vue");
+});
+const Label = defineAsyncComponent(() => {
+  return import("@/components/ui/label/Label.vue");
+});
+const Button = defineAsyncComponent(() => {
+  return import("@/components/ui/button/Button.vue");
+});
 
 const authStore = useAuth();
 
@@ -16,92 +41,84 @@ const disableButton = computed(() => {
 });
 
 const events = defineEmits(["next", "back"]);
+
+watch(
+  () => authStore.car.name,
+  (newOne, oldOne) => {
+    const letterPattern = /[a-zA-Z]/;
+    const numberPattern = /\d/;
+
+    const firstChar = newOne.charAt(0);
+    const secondChar = newOne.charAt(0);
+
+    if (!numberPattern.test(firstChar)) {
+      authStore.car.name = "";
+      return;
+    }
+
+    if (!numberPattern.test(secondChar)) {
+      authStore.car.name = oldOne;
+      return;
+    }
+
+  },
+  { deep: true }
+);
 </script>
 
 <template>
-  <div class="car-form container mx-auto sm:px-4 px-2">
-    <Message> Iltimos, lotinchada yozing </Message>
-    <div class="form my-border border rounded p-4 mt-4">
-      <IonText class="text-xl font-bold"> Avtomobil ma’lumotlari</IonText>
-      <div class="groups mt-4 space-y-3">
-        <div class="form-group flex flex-col items-start">
-          <label class="mb-1" for="name">Rusumi</label>
-          <input
-            v-model.trim="authStore.car.name"
-            required
-            class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
-            type="text"
-            placeholder="COBALT"
-            id="name"
-            v-uppercase
-          />
-        </div>
-        <div class="form-group flex flex-col items-start">
-          <label class="mb-1" for="number">Raqami</label>
-          <input
-            v-model.trim="authStore.car.number"
-            required
-            class="border rounded my-border w-full px-2 py-1 outline-none bg-transparent"
-            type="text"
-            placeholder="90 A 999 AA"
-            id="number"
-            v-uppercase
-          />
-        </div>
-        <div class="form-group flex flex-col items-start">
-          <label class="mb-1" for="color">Rangi</label>
-          <input
-            required
-            v-model.trim="authStore.car.color"
-            class="border rounded my-border w-full px-2 py-1 outline-none bg-transparent"
-            type="text"
-            placeholder="OQ"
-            id="color"
-            v-uppercase
-          />
-        </div>
-        <IonButton
-          :disabled="disableButton"
-          @click="events('next')"
-          class="default-btn w-full font-bold uppercase"
-          type="button"
-          >Keyingisi
-        </IonButton>
-        <IonButton
-          @click="events('back')"
-          class="w-full font-bold uppercase"
-          type="button"
-          fill="outline"
-          >Orqaga</IonButton
+  <div class="car-form">
+    <Card class="bg-primary text-warning-foreground">
+      <CardHeader>
+        <CardTitle>Ro'yxatdan o'tish</CardTitle>
+        <CardDescription
+          >Agarda ro'yxatdan o'tishda ba'zi muammolarga duch kelsangiz, pastdagi
+          telefon raqamlarimizga murojaat qilishingiz mumkin.</CardDescription
         >
-      </div>
-    </div>
+      </CardHeader>
+      <CardContent class="space-y-4">
+        <div class="form-group">
+          <Label for="name">Mashina rusum</Label>
+          <Input
+            v-model:model-value.trim.lazy="authStore.car.name"
+            id="name"
+            type="text"
+            required
+            v-uppercase
+            placeholder="COBALT"
+          />
+        </div>
+        <div class="form-group">
+          <Label for="number">Mashina raqam</Label>
+          <Input
+            v-model:model-value.trim.lazy="authStore.car.number"
+            id="number"
+            type="text"
+            v-uppercase
+            placeholder="90 A 999 AA"
+          />
+        </div>
+        <div class="form-group">
+          <Label for="password">Parol</Label>
+          <Input
+            v-model:model-value.trim.lazy="authStore.driver.password"
+            id="password"
+            type="text"
+            placeholder="******"
+          />
+        </div>
+
+        <Button
+          @click="events('next')"
+          :disabled="disableButton"
+          class="w-full suit-theme"
+          type="button"
+        >
+          Keyingisi
+        </Button>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
-<style scoped>
-@media (prefers-color-scheme: dark) {
-  .default-btn {
-    color: white;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .default-btn {
-    color: black;
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  .my-border {
-    @apply border-gray-200;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .my-border {
-    @apply border-neutral-700;
-  }
-}
-</style>
-@/stores/auth/auth
+<style scoped></style>

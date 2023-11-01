@@ -22,13 +22,17 @@
     "@capacitor/preferences": "^5.0.6",
     "@capacitor/status-bar": "5.0.6",
     "@googlemaps/js-api-loader": "^1.16.2",
-    "@ionic/cli": "^7.1.1",
-    "@ionic/vue": "^7.0.0",
-    "@ionic/vue-router": "^7.0.0",
+    "@radix-icons/vue": "^1.0.0",
+    "@vueuse/core": "^10.5.0",
     "axios": "^1.5.0",
-    "ionicons": "^7.0.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "lucide-vue-next": "^0.291.0",
     "maska": "^2.1.10",
     "pinia": "^2.1.6",
+    "radix-vue": "^1.0.2",
+    "tailwind-merge": "^1.14.0",
+    "tailwindcss-animate": "^1.0.7",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },
@@ -37,6 +41,7 @@
     "@types/google.maps": "^3.54.3",
     "@vitejs/plugin-legacy": "^4.0.2",
     "@vitejs/plugin-vue": "^4.0.0",
+    "@vue/cli-service": "5.0.8",
     "@vue/eslint-config-typescript": "^11.0.2",
     "@vue/test-utils": "^2.3.0",
     "autoprefixer": "^10.4.15",
@@ -51,5 +56,5 @@
     "vitest": "^0.32.2",
     "vue-tsc": "^1.0.24"
   },
-  "description": "An Ionic project"
+  "description": "A Great project"
 }

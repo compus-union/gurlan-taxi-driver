@@ -1,13 +1,31 @@
 <template>
-  <ion-app class="select-none">
-    <ion-router-outlet />
-  </ion-app>
+  <div class="content">
+    <router-view> </router-view>
+  </div>
 </template>
 
-<script setup lang="ts">
-import { IonApp, IonRouterOutlet } from '@ionic/vue';
-</script>
+<script setup lang="ts"></script>
 
 <style>
+.scale-slide-enter-active,
+.scale-slide-leave-active {
+  position: absolute;
+  transition: all 0.85s ease;
+}
 
+.scale-slide-enter-from {
+  left: -100%;
+}
+
+.scale-slide-enter-to {
+  left: 0%;
+}
+
+.scale-slide-leave-from {
+  transform: scale(1);
+}
+
+.scale-slide-leave-to {
+  transform: scale(0.8);
+}
 </style>
