@@ -197,42 +197,15 @@ export const useAuth = defineStore("auth-store", () => {
         headers: { Authorization: `Bearer ${payload.token}` },
       });
       if (res.status >= 400) {
-        await loading.dismiss();
-        const toast = await toastController.create({
-          message: "Nimadir xato ketdi, internetingizni tekshiring.",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              handler: async () => {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        // dismiss loading
+        // toast show
 
         return;
       }
 
       if (res.data.status === ResponseStatus.VALIDATION_WAITING) {
-        await loading.dismiss();
-
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              handler: async () => {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        // dismiss loading
+        // toast show
 
         await Promise.allSettled([
           Preferences.remove({ key: "banned" }),
@@ -254,47 +227,20 @@ export const useAuth = defineStore("auth-store", () => {
         res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
         res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID
       ) {
-        await loading.dismiss();
-
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              handler: async () => {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
+        // dismiss loading
+        // toast show
 
         await Promise.allSettled([
           Preferences.clear(),
           router.push("/register"),
         ]);
 
-        await toast.present();
         return;
       }
 
-      if (res.data.status === ResponseStatus.DRIVER_BANNED) {
-        await loading.dismiss();
-
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              handler: async () => {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+      if (res.data.status === ResponseStatus.BANNED) {
+        // dismiss loading
+        // toast show
 
         await Promise.allSettled([
           Preferences.remove({ key: "validation" }),
@@ -311,26 +257,13 @@ export const useAuth = defineStore("auth-store", () => {
       }
 
       if (res.data.status === ResponseStatus.VALIDATION_FAILED) {
-        await loading.dismiss();
+        //  dismiss loading
         const { value: validation } = await Preferences.get({
           key: "validation",
         });
 
         if (validation !== DriverValidation.INVALIDATED) {
-          const toast = await toastController.create({
-            message: res.data.msg,
-            duration: 4000,
-            buttons: [
-              {
-                text: "OK",
-                async handler() {
-                  await toast.dismiss();
-                },
-              },
-            ],
-          });
-
-          await toast.present();
+          // show toast
 
           await Preferences.set({
             key: "validation",
@@ -347,26 +280,13 @@ export const useAuth = defineStore("auth-store", () => {
       }
 
       if (res.data.status === ResponseStatus.VALIDATION_DONE) {
-        await loading.dismiss();
+        // dismiss loading
         const { value: validation } = await Preferences.get({
           key: "validation",
         });
 
         if (validation !== "validated") {
-          const toast = await toastController.create({
-            message: res.data.msg,
-            duration: 4000,
-            buttons: [
-              {
-                text: "OK",
-                handler: async () => {
-                  await toast.dismiss();
-                },
-              },
-            ],
-          });
-
-          await toast.present();
+          // show toast
         }
 
         await Promise.allSettled([
@@ -381,25 +301,12 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
 
-      if (res.data.status === ResponseStatus.LOGIN_FAILED) {
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+      if (res.data.status === ResponseStatus.DRIVER_LOGIN_FAILED) {
+        // show toast
         return;
       }
 
-      if (res.data.status === ResponseStatus.LOGIN_DONE) {
+      if (res.data.status === ResponseStatus.DRIVER_LOGIN_DONE) {
         await Promise.allSettled([
           Preferences.set({
             key: "validation",

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from "@/stores/auth";
-import { computed, defineAsyncComponent, watch } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 import { vUppercase } from "@/directives/uppercase";
 import { vMaska } from "maska";
 import { TreesIcon } from "lucide-vue-next";
@@ -41,39 +41,16 @@ const disableButton = computed(() => {
 });
 
 const events = defineEmits(["next", "back"]);
-
-watch(
-  () => authStore.car.name,
-  (newOne, oldOne) => {
-    const letterPattern = /[a-zA-Z]/;
-    const numberPattern = /\d/;
-
-    const firstChar = newOne.charAt(0);
-    const secondChar = newOne.charAt(0);
-
-    if (!numberPattern.test(firstChar)) {
-      authStore.car.name = "";
-      return;
-    }
-
-    if (!numberPattern.test(secondChar)) {
-      authStore.car.name = oldOne;
-      return;
-    }
-
-  },
-  { deep: true }
-);
 </script>
 
 <template>
   <div class="car-form">
-    <Card class="bg-primary text-warning-foreground">
+    <Card class="bg-primary text-warning-foreground w-full">
       <CardHeader>
-        <CardTitle>Ro'yxatdan o'tish</CardTitle>
+        <CardTitle>Avtomobil ma'lumotlari</CardTitle>
         <CardDescription
-          >Agarda ro'yxatdan o'tishda ba'zi muammolarga duch kelsangiz, pastdagi
-          telefon raqamlarimizga murojaat qilishingiz mumkin.</CardDescription
+          >Mashina rusumi va rangini kiritishda faqat lotin harflaridan
+          foydalaning.</CardDescription
         >
       </CardHeader>
       <CardContent class="space-y-4">
@@ -99,12 +76,13 @@ watch(
           />
         </div>
         <div class="form-group">
-          <Label for="password">Parol</Label>
+          <Label for="color">Rangi</Label>
           <Input
-            v-model:model-value.trim.lazy="authStore.driver.password"
-            id="password"
+            v-model:model-value.trim.lazy="authStore.car.color"
+            id="color"
             type="text"
-            placeholder="******"
+            v-uppercase
+            placeholder="QORA"
           />
         </div>
 
@@ -115,6 +93,9 @@ watch(
           type="button"
         >
           Keyingisi
+        </Button>
+        <Button @click="events('back')" type="button" class="w-full" variant="outline">
+          Orqaga
         </Button>
       </CardContent>
     </Card>
