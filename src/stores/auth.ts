@@ -12,6 +12,7 @@ import { useLoading } from "./loading";
 import { useRouter } from "vue-router";
 import { ResponseStatus } from "@/constants";
 import { UniversalResponseStatus } from "@/constants";
+import { loadingController, toastController } from "@ionic/vue";
 
 interface Driver {
   id?: string;
@@ -164,6 +165,8 @@ export const useAuth = defineStore("auth-store", () => {
         msg: "Something just happened",
       };
     } catch (error: any) {
+      console.log(error);
+
       if (
         error.message === "Network Error" ||
         error.message.includes("timeout")
@@ -190,22 +193,53 @@ export const useAuth = defineStore("auth-store", () => {
   }) {
     await loadingStore.setLoading(true);
 
-    // show loading
+    const loading = await loadingController.create({
+      message: "Yuklanmoqda...",
+    });
 
     try {
+      await loading.present();
       const res = await authInstance.get(`/check-validation/${payload.oneId}`, {
         headers: { Authorization: `Bearer ${payload.token}` },
       });
       if (res.status >= 400) {
-        // dismiss loading
-        // toast show
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: "Server bilan aloqa mavjud emas, boshqatdan urinib ko'ring",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
 
         return;
       }
 
       if (res.data.status === ResponseStatus.VALIDATION_WAITING) {
-        // dismiss loading
-        // toast show
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
 
         await Promise.allSettled([
           Preferences.remove({ key: "banned" }),
@@ -213,57 +247,99 @@ export const useAuth = defineStore("auth-store", () => {
           Preferences.set({ key: "auth_token", value: res.data.token }),
         ]);
 
-        if (router.currentRoute.value.fullPath === "/validation-waiting") {
+        if (router.currentRoute.value.fullPath === "/auth/validation-waiting") {
           return;
         }
 
-        await router.push("/validation-waiting");
+        await router.push("/auth/validation-waiting");
         return;
       }
 
       if (
         res.data.status === ResponseStatus.DRIVER_NOT_FOUND ||
         res.data.status === ResponseStatus.HEADERS_NOT_FOUND ||
-        res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
-        res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID
+        res.data.status === ResponseStatus.TOKEN_NOT_FOUND ||
+        res.data.status === ResponseStatus.TOKEN_NOT_VALID
       ) {
-        // dismiss loading
-        // toast show
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
 
         await Promise.allSettled([
           Preferences.clear(),
-          router.push("/register"),
+          router.push("/auth/register"),
         ]);
 
         return;
       }
 
       if (res.data.status === ResponseStatus.BANNED) {
-        // dismiss loading
-        // toast show
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
 
         await Promise.allSettled([
           Preferences.remove({ key: "validation" }),
           Preferences.set({ key: "banned", value: "true" }),
         ]);
 
-        if (router.currentRoute.value.fullPath === "/banned") {
+        if (router.currentRoute.value.fullPath === "/auth/banned") {
           return;
         }
 
-        await router.push("/banned");
+        await router.push("/auth/banned");
 
         return;
       }
 
       if (res.data.status === ResponseStatus.VALIDATION_FAILED) {
-        //  dismiss loading
+        await loading.dismiss();
+
         const { value: validation } = await Preferences.get({
           key: "validation",
         });
 
         if (validation !== DriverValidation.INVALIDATED) {
-          // show toast
+          const toast = await toastController.create({
+            message: res.data.msg,
+            duration: 4000,
+            buttons: [
+              {
+                text: "OK",
+                async handler() {
+                  await toast.dismiss();
+                },
+              },
+            ],
+          });
+
+          await toast.present();
 
           await Preferences.set({
             key: "validation",
@@ -272,7 +348,7 @@ export const useAuth = defineStore("auth-store", () => {
         }
 
         if (router.currentRoute.value.fullPath !== "/invalidation") {
-          await router.push("/invalidation");
+          await router.push("/auth/invalidation");
           return;
         }
 
@@ -280,13 +356,26 @@ export const useAuth = defineStore("auth-store", () => {
       }
 
       if (res.data.status === ResponseStatus.VALIDATION_DONE) {
-        // dismiss loading
+        await loading.dismiss();
         const { value: validation } = await Preferences.get({
           key: "validation",
         });
 
         if (validation !== "validated") {
-          // show toast
+          const toast = await toastController.create({
+            message: res.data.msg,
+            duration: 4000,
+            buttons: [
+              {
+                text: "OK",
+                async handler() {
+                  await toast.dismiss();
+                },
+              },
+            ],
+          });
+
+          await toast.present();
         }
 
         await Promise.allSettled([
@@ -302,7 +391,20 @@ export const useAuth = defineStore("auth-store", () => {
       }
 
       if (res.data.status === ResponseStatus.DRIVER_LOGIN_FAILED) {
-        // show toast
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
         return;
       }
 
@@ -319,7 +421,7 @@ export const useAuth = defineStore("auth-store", () => {
         return;
       }
     } catch (error: any) {
-      // dismiss loading
+      await loading.dismiss();
 
       console.log(error);
 
@@ -327,13 +429,41 @@ export const useAuth = defineStore("auth-store", () => {
         error.message === "Network Error" ||
         error.message.includes("timeout")
       ) {
-        // show error with toast
+        const toast = await toastController.create({
+          message: "Server bilan aloqa mavjud emas",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
 
         return;
       }
 
-      // Handle other unknown errors
-      // show error with toast
+      const toast = await toastController.create({
+        message:
+          error.response.data.msg ||
+          error.message ||
+          "Xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring.",
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
 
       return;
     } finally {
@@ -345,13 +475,31 @@ export const useAuth = defineStore("auth-store", () => {
     oneId: string;
     token: string;
   }): Promise<void> {
+    const loading = await loadingController.create({
+      message: "Yuklanmoqda...",
+    });
     try {
       const res = await authInstance.get(`/check-logged-in/${payload.oneId}`, {
         headers: { Authorization: `Bearer ${payload.token}` },
       });
 
       if (res.status >= 400) {
-        // show error with toast
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: "Server bilan aloqa mavjud emas, boshqatdan urinib ko'ring",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
 
         return;
       }
@@ -359,21 +507,50 @@ export const useAuth = defineStore("auth-store", () => {
       if (
         res.data.status === ResponseStatus.DRIVER_NOT_FOUND ||
         res.data.status === ResponseStatus.HEADERS_NOT_FOUND ||
-        res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
-        res.data.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID
+        res.data.status === ResponseStatus.TOKEN_NOT_FOUND ||
+        res.data.status === ResponseStatus.TOKEN_NOT_FOUND
       ) {
-        // show error with toast
+        await loading.dismiss();
 
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
         await Preferences.clear();
 
         setTimeout(() => {
-          router.push("/register");
+          router.push("/auth/register");
         }, 300);
         return;
       }
 
       if (res.data.status === ResponseStatus.BANNED) {
-        // show error with toast
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
 
         await Promise.allSettled([
           Preferences.set({ key: "banned", value: "true" }),
@@ -381,13 +558,28 @@ export const useAuth = defineStore("auth-store", () => {
         ]);
 
         setTimeout(() => {
-          router.push("/banned");
+          router.push("/auth/banned");
         }, 300);
         return;
       }
 
       if (res.data.status === ResponseStatus.DRIVER_LOGIN_FAILED) {
-        // show error with toast
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
 
         await Promise.allSettled([
           Preferences.set({
@@ -400,6 +592,23 @@ export const useAuth = defineStore("auth-store", () => {
       }
 
       if (res.data.status === ResponseStatus.DRIVER_LOGIN_DONE) {
+        await loading.dismiss();
+
+        const toast = await toastController.create({
+          message: res.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
+
         await Promise.allSettled([
           Preferences.set({
             key: "validation",
@@ -413,18 +622,52 @@ export const useAuth = defineStore("auth-store", () => {
 
       return;
     } catch (error: any) {
+      await loading.dismiss();
       console.log(error);
 
       if (
         error.message === "Network Error" ||
         error.message.includes("timeout")
       ) {
-        // show error with toast
+        const toast = await toastController.create({
+          message: "Server bilan aloqa mavjud emas, boshqatdan urinib ko'ring",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+
+        await toast.present();
 
         return;
       }
 
-      // show error with toast
+      const toast = await toastController.create({
+        message:
+          error.response.data.msg ||
+          error.message ||
+          "Xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring.",
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
+
+      return;
+    } finally {
+      await loading.dismiss();
     }
   }
 

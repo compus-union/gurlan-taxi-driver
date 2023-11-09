@@ -5,6 +5,7 @@ import { useLoading } from "@/stores/loading";
 import router from "@/router";
 import { authInstance } from "@/http";
 import { ResponseStatus } from "@/constants";
+import { loadingController, toastController } from "@ionic/vue";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
@@ -48,11 +49,6 @@ const authStore = useAuth();
 
 const files = ref<File[]>([]);
 
-const pravaFront = ref<HTMLInputElement>();
-const pravaBack = ref<HTMLInputElement>();
-const texFront = ref<HTMLInputElement>();
-const texBack = ref<HTMLInputElement>();
-
 const pravaFrontImg = ref();
 const pravaBackImg = ref();
 const texFrontImg = ref();
@@ -95,8 +91,10 @@ const pushFile = (
 };
 
 const action = async () => {
-  // show loading
+  const loading = await loadingController.create({ message: "Kuting..." });
+
   try {
+    await loading.present();
     const result = await authStore.register({
       driver: authStore.driver,
       car: authStore.car,
@@ -104,9 +102,21 @@ const action = async () => {
     });
 
     if (result.status === ResponseStatus.AUTH_WARNING) {
-      // dismiss loading
+      await loading.dismiss();
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
 
-      // show error with toast
+      await toast.present();
 
       return;
     }
@@ -124,52 +134,132 @@ const action = async () => {
       );
 
       if (!sendingPictures) {
-        // dismiss loading
-
-        // show error with toast
+        await loading.dismiss();
+        const toast = await toastController.create({
+          message: "Hujjatlaringizni yuborishda xatolik yuzaga keldi",
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
+        await toast.present();
 
         return;
       }
 
       if (sendingPictures.data.status !== ResponseStatus.IMAGES_SENT) {
-        // dismiss loading
+        await loading.dismiss();
+        const toast = await toastController.create({
+          message: sendingPictures.data.msg,
+          duration: 4000,
+          buttons: [
+            {
+              text: "OK",
+              async handler() {
+                await toast.dismiss();
+              },
+            },
+          ],
+        });
 
-        // show error with toast
+        await toast.present();
 
         return;
       }
 
-      // dismiss loading
+      await loading.dismiss();
 
-      // show error with toast
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
 
       setTimeout(() => {
-        router.push("/validation-waiting");
+        router.push("/auth/validation-waiting");
       }, 500);
 
       return;
     }
 
     if (result.status === ResponseStatus.UNKNOWN_ERR) {
-      // dismiss loading
+      await loading.dismiss();
 
-      // show error with toast
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000, 
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
 
       return;
     }
   } catch (error: any) {
-    // dismiss loading
+    console.log(error);
+    
+    await loading.dismiss();
 
     if (!error.response) {
-      // show error with toast
+      const toast = await toastController.create({
+        message: `Serverga ulanishda xatolik, boshqatdan urinib ko'ring`,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+
+      await toast.present();
 
       return;
     }
-    // show error with toast
+    const toast = await toastController.create({
+      message:
+        error.response.data.msg ||
+        error.message ||
+        `Serverga ulanishda xatolik, boshqatdan urinib ko'ring`,
+      duration: 4000,
+      buttons: [
+        {
+          text: "OK",
+          async handler() {
+            await toast.dismiss();
+          },
+        },
+      ],
+    });
+
+    await toast.present();
 
     return;
   } finally {
-    // dismiss loading
+    await loading.dismiss();
   }
 };
 
@@ -224,7 +314,7 @@ const disableButton = computed(() => {
               <div
                 class="icon flex flex-col items-center justify-center w-[90%] my-3 h-[50%]"
               >
-              <PravaTexBackIcon v-show="!pravaBackImg" class="w-full" />
+                <PravaTexBackIcon v-show="!pravaBackImg" class="w-full" />
                 <img
                   v-show="pravaBackImg"
                   class="w-full h-full object-cover"
@@ -277,7 +367,7 @@ const disableButton = computed(() => {
               <div
                 class="icon flex flex-col items-center justify-center w-[90%] my-3 h-[50%]"
               >
-              <PravaTexBackIcon v-show="!texBackImg" class="w-full" />
+                <PravaTexBackIcon v-show="!texBackImg" class="w-full" />
                 <img
                   v-show="texBackImg"
                   class="w-full h-full object-cover"
@@ -300,12 +390,20 @@ const disableButton = computed(() => {
           </div>
         </div>
         <Button
-          @click="events('next')"
+          @click="action"
           :disabled="disableButton"
           class="w-full suit-theme"
           type="button"
         >
           Jo'natish
+        </Button>
+        <Button
+          @click="events('back')"
+          type="button"
+          class="w-full"
+          variant="outline"
+        >
+          Orqaga
         </Button>
       </CardContent>
     </Card>

@@ -22,7 +22,7 @@ const AlertDescription = defineAsyncComponent(() => {
   return import("@/components/ui/alert/AlertDescription.vue");
 });
 
-const step = ref(3);
+const step = ref(1);
 
 const addStep = () => {
   if (step.value === 3) {

@@ -12,6 +12,7 @@ import {
 } from "@/constants";
 import { useLoading } from "@/stores/loading";
 import router from "@/router";
+import { toastController } from "@ionic/vue";
 
 const authStore = useAuth();
 const loadingStore = useLoading();
@@ -47,66 +48,169 @@ const action = async () => {
       password: authStore.driver.password,
     });
 
-    // show error with toast
-
     if (result.status === ResponseStatus.AUTH_WARNING) {
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+      await toast.present();
       return;
     }
 
     if (result.status === ResponseStatus.BANNED) {
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+      await toast.present();
       await Promise.allSettled([
         Preferences.remove({ key: "validation" }),
         Preferences.set({ key: "banned", value: "true" }),
-        router.push("/banned"),
+        router.push("/auth/banned"),
       ]);
 
       return;
     }
 
     if (result.status === ResponseStatus.VALIDATION_FAILED) {
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+      await toast.present();
       await Promise.allSettled([
         Preferences.remove({ key: "banned" }),
         Preferences.set({
           key: "validation",
           value: DriverValidation.INVALIDATED,
         }),
-        router.push("/invalidation"),
+        router.push("/auth/invalidation"),
       ]);
 
       return;
     }
 
     if (result.status === ResponseStatus.VALIDATION_WAITING) {
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+      await toast.present();
       await Promise.allSettled([
         Preferences.remove({ key: "banned" }),
         Preferences.set({
           key: "validation",
           value: DriverValidation.WAITING,
         }),
-        router.push("/validation-waiting"),
+        router.push("/auth/validation-waiting"),
       ]);
 
       return;
     }
 
     if (result.status === UniversalResponseStatus.ERR_NETWORK) {
+      const toast = await toastController.create({
+        message: result.msg || "Server bilan aloqa mavjud emas",
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+      await toast.present();
       return;
     }
 
     if (result.status === ResponseStatus.DRIVER_NOT_FOUND) {
-      await Promise.allSettled([Preferences.clear(), router.push("/register")]);
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+      await toast.present();
+      await Promise.allSettled([Preferences.clear(), router.push("/auth/register")]);
       return;
     }
 
     if (
-      result.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
-      result.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID ||
+      result.status === ResponseStatus.TOKEN_NOT_FOUND ||
+      result.status === ResponseStatus.TOKEN_NOT_VALID ||
       result.status === ResponseStatus.HEADERS_NOT_FOUND
     ) {
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+      await toast.present();
+
       return;
     }
 
     if (result.status === ResponseStatus.DRIVER_LOGIN_DONE) {
+      const toast = await toastController.create({
+        message: result.msg,
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+      await toast.present();
       await Promise.allSettled([
         Preferences.set({ key: "validation", value: DriverValidation.SUCCESS }),
         Preferences.set({ key: "driverOneId", value: result.oneId }),
@@ -124,10 +228,35 @@ const action = async () => {
     }
   } catch (error: any) {
     if (!error.response) {
-      // show error with toast
+      const toast = await toastController.create({
+        message:
+          "Xatolik yuz berdi, boshqatdan urinib ko'ring yoki dasturni boshqatdan ishga tushiring",
+        duration: 4000,
+        buttons: [
+          {
+            text: "OK",
+            async handler() {
+              await toast.dismiss();
+            },
+          },
+        ],
+      });
+      await toast.present();
       return;
     }
-    // show error with toast
+    const toast = await toastController.create({
+      message: error.response.data.msg || error.message,
+      duration: 4000,
+      buttons: [
+        {
+          text: "OK",
+          async handler() {
+            await toast.dismiss();
+          },
+        },
+      ],
+    });
+    await toast.present();
 
     return;
   }
