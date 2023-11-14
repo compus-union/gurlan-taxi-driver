@@ -36,7 +36,6 @@ ion-loading .loading-wrapper {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #000;
   padding: 18px;
   border-radius: 10px;
   width: 70%;
@@ -50,7 +49,47 @@ ion-loading .loading-wrapper {
   justify-content: center;
 }
 
+.Toastify__toast {
+  padding: 6px 10px;
+  border-radius: 10px;
+  min-height: auto;
+  max-height: auto;
+  height: auto;
+}
+
 @media (prefers-color-scheme: light) {
+  .Toastify__toast {
+    background: #000;
+    color: #fff;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .Toastify__toast {
+    background: #fff;
+    color: #000;
+  }
+}
+
+.Toastify__toast-container {
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  width: calc(100vw - 20px);
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  @apply space-y-2
+}
+
+@media (prefers-color-scheme: light) {
+  ion-loading .loading-wrapper {
+    background: #000;
+    color: #fff;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
   ion-loading .loading-wrapper {
     background: #fff;
     color: #000;
@@ -58,6 +97,7 @@ ion-loading .loading-wrapper {
 }
 
 a,
-button {
+button,
+* {
   -webkit-tap-highlight-color: transparent;
 }

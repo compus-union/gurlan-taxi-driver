@@ -6,6 +6,7 @@ import router from "@/router";
 import { authInstance } from "@/http";
 import { ResponseStatus } from "@/constants";
 import { loadingController, toastController } from "@ionic/vue";
+import { toast } from "vue3-toastify";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
@@ -103,20 +104,8 @@ const action = async () => {
 
     if (result.status === ResponseStatus.AUTH_WARNING) {
       await loading.dismiss();
-      const toast = await toastController.create({
-        message: result.msg,
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
 
-      await toast.present();
+      toast(result.msg);
 
       return;
     }
@@ -135,59 +124,23 @@ const action = async () => {
 
       if (!sendingPictures) {
         await loading.dismiss();
-        const toast = await toastController.create({
-          message: "Hujjatlaringizni yuborishda xatolik yuzaga keldi",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-        await toast.present();
+
+        toast("Hujjatlaringizni yuborishda xatolik yuzaga keldi");
 
         return;
       }
 
       if (sendingPictures.data.status !== ResponseStatus.IMAGES_SENT) {
         await loading.dismiss();
-        const toast = await toastController.create({
-          message: sendingPictures.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
 
-        await toast.present();
+        toast(sendingPictures.data.msg);
 
         return;
       }
 
       await loading.dismiss();
 
-      const toast = await toastController.create({
-        message: result.msg,
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await toast.present();
+      toast(result.msg);
 
       setTimeout(() => {
         router.push("/auth/validation-waiting");
@@ -199,63 +152,25 @@ const action = async () => {
     if (result.status === ResponseStatus.UNKNOWN_ERR) {
       await loading.dismiss();
 
-      const toast = await toastController.create({
-        message: result.msg,
-        duration: 4000, 
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await toast.present();
+      toast(result.msg);
 
       return;
     }
   } catch (error: any) {
     console.log(error);
-    
+
     await loading.dismiss();
 
     if (!error.response) {
-      const toast = await toastController.create({
-        message: `Serverga ulanishda xatolik, boshqatdan urinib ko'ring`,
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await toast.present();
+      toast(`Serverga ulanishda xatolik, boshqatdan urinib ko'ring`);
 
       return;
     }
-    const toast = await toastController.create({
-      message:
-        error.response.data.msg ||
+    toast(
+      error.response.data.msg ||
         error.message ||
-        `Serverga ulanishda xatolik, boshqatdan urinib ko'ring`,
-      duration: 4000,
-      buttons: [
-        {
-          text: "OK",
-          async handler() {
-            await toast.dismiss();
-          },
-        },
-      ],
-    });
-
-    await toast.present();
+        `Serverga ulanishda xatolik, boshqatdan urinib ko'ring`
+    );
 
     return;
   } finally {

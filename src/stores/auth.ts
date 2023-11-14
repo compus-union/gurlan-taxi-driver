@@ -13,6 +13,7 @@ import { useRouter } from "vue-router";
 import { ResponseStatus } from "@/constants";
 import { UniversalResponseStatus } from "@/constants";
 import { loadingController, toastController } from "@ionic/vue";
+import { toast } from "vue3-toastify";
 
 interface Driver {
   id?: string;
@@ -205,20 +206,9 @@ export const useAuth = defineStore("auth-store", () => {
       if (res.status >= 400) {
         await loading.dismiss();
 
-        const toast = await toastController.create({
-          message: "Server bilan aloqa mavjud emas, boshqatdan urinib ko'ring",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast(
+          "Server bilan aloqa mavjud emas, boshqatdan urinib ko'ring yoki dasturni boshqatdan ishga tushiring"
+        );
 
         return;
       }
@@ -226,20 +216,7 @@ export const useAuth = defineStore("auth-store", () => {
       if (res.data.status === ResponseStatus.VALIDATION_WAITING) {
         await loading.dismiss();
 
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast(res.data.msg);
 
         await Promise.allSettled([
           Preferences.remove({ key: "banned" }),
@@ -263,20 +240,7 @@ export const useAuth = defineStore("auth-store", () => {
       ) {
         await loading.dismiss();
 
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast(res.data.msg);
 
         await Promise.allSettled([
           Preferences.clear(),
@@ -289,20 +253,7 @@ export const useAuth = defineStore("auth-store", () => {
       if (res.data.status === ResponseStatus.BANNED) {
         await loading.dismiss();
 
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast(res.data.msg);
 
         await Promise.allSettled([
           Preferences.remove({ key: "validation" }),
@@ -325,22 +276,9 @@ export const useAuth = defineStore("auth-store", () => {
           key: "validation",
         });
 
+        toast(res.data.msg);
+
         if (validation !== DriverValidation.INVALIDATED) {
-          const toast = await toastController.create({
-            message: res.data.msg,
-            duration: 4000,
-            buttons: [
-              {
-                text: "OK",
-                async handler() {
-                  await toast.dismiss();
-                },
-              },
-            ],
-          });
-
-          await toast.present();
-
           await Preferences.set({
             key: "validation",
             value: DriverValidation.INVALIDATED,
@@ -362,20 +300,7 @@ export const useAuth = defineStore("auth-store", () => {
         });
 
         if (validation !== "validated") {
-          const toast = await toastController.create({
-            message: res.data.msg,
-            duration: 4000,
-            buttons: [
-              {
-                text: "OK",
-                async handler() {
-                  await toast.dismiss();
-                },
-              },
-            ],
-          });
-
-          await toast.present();
+          toast(res.data.msg);
         }
 
         await Promise.allSettled([
@@ -391,20 +316,8 @@ export const useAuth = defineStore("auth-store", () => {
       }
 
       if (res.data.status === ResponseStatus.DRIVER_LOGIN_FAILED) {
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
+        toast(res.data.msg);
 
-        await toast.present();
         return;
       }
 
@@ -429,41 +342,16 @@ export const useAuth = defineStore("auth-store", () => {
         error.message === "Network Error" ||
         error.message.includes("timeout")
       ) {
-        const toast = await toastController.create({
-          message: "Server bilan aloqa mavjud emas",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast("Server bilan aloqa mavjud emas");
 
         return;
       }
 
-      const toast = await toastController.create({
-        message:
-          error.response.data.msg ||
+      toast(
+        error.response.data.msg ||
           error.message ||
-          "Xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring.",
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await toast.present();
+          "Xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring."
+      );
 
       return;
     } finally {
@@ -486,20 +374,7 @@ export const useAuth = defineStore("auth-store", () => {
       if (res.status >= 400) {
         await loading.dismiss();
 
-        const toast = await toastController.create({
-          message: "Server bilan aloqa mavjud emas, boshqatdan urinib ko'ring",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast("Server bilan aloqa mavjud emas, boshqatdan urinib ko'ring");
 
         return;
       }
@@ -512,20 +387,7 @@ export const useAuth = defineStore("auth-store", () => {
       ) {
         await loading.dismiss();
 
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast(res.data.msg);
         await Preferences.clear();
 
         setTimeout(() => {
@@ -537,20 +399,7 @@ export const useAuth = defineStore("auth-store", () => {
       if (res.data.status === ResponseStatus.BANNED) {
         await loading.dismiss();
 
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast(res.data.msg);
 
         await Promise.allSettled([
           Preferences.set({ key: "banned", value: "true" }),
@@ -566,20 +415,7 @@ export const useAuth = defineStore("auth-store", () => {
       if (res.data.status === ResponseStatus.DRIVER_LOGIN_FAILED) {
         await loading.dismiss();
 
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast(res.data.msg);
 
         await Promise.allSettled([
           Preferences.set({
@@ -594,20 +430,7 @@ export const useAuth = defineStore("auth-store", () => {
       if (res.data.status === ResponseStatus.DRIVER_LOGIN_DONE) {
         await loading.dismiss();
 
-        const toast = await toastController.create({
-          message: res.data.msg,
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast(res.data.msg);
 
         await Promise.allSettled([
           Preferences.set({
@@ -629,41 +452,16 @@ export const useAuth = defineStore("auth-store", () => {
         error.message === "Network Error" ||
         error.message.includes("timeout")
       ) {
-        const toast = await toastController.create({
-          message: "Server bilan aloqa mavjud emas, boshqatdan urinib ko'ring",
-          duration: 4000,
-          buttons: [
-            {
-              text: "OK",
-              async handler() {
-                await toast.dismiss();
-              },
-            },
-          ],
-        });
-
-        await toast.present();
+        toast("Server bilan aloqa mavjud emas, boshqatdan urinib ko'ring");
 
         return;
       }
 
-      const toast = await toastController.create({
-        message:
-          error.response.data.msg ||
+      toast(
+        error.response.data.msg ||
           error.message ||
-          "Xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring.",
-        duration: 4000,
-        buttons: [
-          {
-            text: "OK",
-            async handler() {
-              await toast.dismiss();
-            },
-          },
-        ],
-      });
-
-      await toast.present();
+          "Xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring."
+      );
 
       return;
     } finally {
@@ -718,6 +516,67 @@ export const useAuth = defineStore("auth-store", () => {
     }
   }
 
+  async function restart(payload: {
+    oneId: string;
+    token: string;
+  }): Promise<void> {
+    const loading = await loadingController.create({
+      message: "Restart qilinmoqda...",
+    });
+
+    try {
+      await loading.present();
+      const response = await authInstance.delete(`/restart/${payload.oneId}`, {
+        headers: { Authorization: `Bearer ${payload.token}` },
+      });
+
+      if (response.status >= 400) {
+        toast(`Server bilan aloqa mavjud emas`);
+
+        return;
+      }
+
+      if (
+        response.data.status === ResponseStatus.DRIVER_NOT_FOUND ||
+        response.data.status === ResponseStatus.HEADERS_NOT_FOUND ||
+        response.data.status === ResponseStatus.TOKEN_NOT_FOUND ||
+        response.data.status === ResponseStatus.TOKEN_NOT_VALID ||
+        response.data.status === ResponseStatus.DRIVER_RESTART_DONE
+      ) {
+        toast(response.data.msg);
+
+        await Promise.allSettled([
+          Preferences.clear(),
+          router.push("/auth/register"),
+        ]);
+
+        return;
+      }
+
+      return;
+    } catch (error: any) {
+      if (
+        error.message === "Network Error" ||
+        error.message.includes("timeout")
+      ) {
+        toast(
+          "Server bilan aloqa mavjud emas, internetingizni tekshirib, dasturga qaytaldan kiring."
+        );
+
+        return;
+      }
+
+      toast(
+        error.message ||
+          error.response.data.msg ||
+          `Qandaydir xatolik yuz berdi, boshqatdan urinib ko'ring`
+      );
+    } finally {
+      await loading.dismiss();
+      return;
+    }
+  }
+
   return {
     register,
     driver,
@@ -730,5 +589,6 @@ export const useAuth = defineStore("auth-store", () => {
     bannedReason,
     login,
     checkIfLoggedIn,
+    restart
   };
 });
