@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'driver',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
+    cleartext: true
   }
 };
 

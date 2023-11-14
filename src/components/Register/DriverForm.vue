@@ -76,12 +76,12 @@ const maskOptions = ref({
 
 <template>
   <div class="driver-form">
-    <Card class="bg-primary text-warning-foreground">
+    <Card class="bg-primary text-warning-foreground w-full">
       <CardHeader>
-        <CardTitle>Ro'yxatdan o'tish</CardTitle>
+        <CardTitle>Haydovchi ma'lumotlari</CardTitle>
         <CardDescription
-          >Agarda ro'yxatdan o'tishda ba'zi muammolarga duch kelsangiz, pastdagi
-          telefon raqamlarimizga murojaat qilishingiz mumkin.</CardDescription
+          >Parol kamida 8 ta belgidan, bitta katta harfdan, faqat lotin harflaridan va raqamlardan
+          tashkil topishi kerak. Bo'sh joy va ortiqcha belgilar bilan yozish mumkin emas.</CardDescription
         >
       </CardHeader>
       <CardContent class="space-y-4">

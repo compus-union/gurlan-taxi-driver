@@ -12,6 +12,8 @@ import {
 } from "@/constants";
 import { useLoading } from "@/stores/loading";
 import router from "@/router";
+import { toastController } from "@ionic/vue";
+import { toast } from "vue3-toastify";
 
 const authStore = useAuth();
 const loadingStore = useLoading();
@@ -47,66 +49,83 @@ const action = async () => {
       password: authStore.driver.password,
     });
 
-    // show error with toast
-
     if (result.status === ResponseStatus.AUTH_WARNING) {
+      toast(result.msg);
+
       return;
     }
 
     if (result.status === ResponseStatus.BANNED) {
+      toast(result.msg);
+
       await Promise.allSettled([
         Preferences.remove({ key: "validation" }),
         Preferences.set({ key: "banned", value: "true" }),
-        router.push("/banned"),
+        router.push("/auth/banned"),
       ]);
 
       return;
     }
 
     if (result.status === ResponseStatus.VALIDATION_FAILED) {
+      toast(result.msg);
+
       await Promise.allSettled([
         Preferences.remove({ key: "banned" }),
         Preferences.set({
           key: "validation",
           value: DriverValidation.INVALIDATED,
         }),
-        router.push("/invalidation"),
+        router.push("/auth/invalidation"),
       ]);
 
       return;
     }
 
     if (result.status === ResponseStatus.VALIDATION_WAITING) {
+      toast(result.msg);
+
       await Promise.allSettled([
         Preferences.remove({ key: "banned" }),
         Preferences.set({
           key: "validation",
           value: DriverValidation.WAITING,
         }),
-        router.push("/validation-waiting"),
+        router.push("/auth/validation-waiting"),
       ]);
 
       return;
     }
 
     if (result.status === UniversalResponseStatus.ERR_NETWORK) {
+      toast(result.msg || "Server bilan aloqa mavjud emas");
+
       return;
     }
 
     if (result.status === ResponseStatus.DRIVER_NOT_FOUND) {
-      await Promise.allSettled([Preferences.clear(), router.push("/register")]);
+      toast(result.msg);
+
+      await Promise.allSettled([
+        Preferences.clear(),
+        router.push("/auth/register"),
+      ]);
       return;
     }
 
     if (
-      result.status === ResponseStatus.DRIVER_TOKEN_NOT_FOUND ||
-      result.status === ResponseStatus.DRIVER_TOKEN_NOT_VALID ||
+      result.status === ResponseStatus.TOKEN_NOT_FOUND ||
+      result.status === ResponseStatus.TOKEN_NOT_VALID ||
       result.status === ResponseStatus.HEADERS_NOT_FOUND
     ) {
+      toast(result.msg);
+
       return;
     }
 
     if (result.status === ResponseStatus.DRIVER_LOGIN_DONE) {
+      toast(result.msg);
+
       await Promise.allSettled([
         Preferences.set({ key: "validation", value: DriverValidation.SUCCESS }),
         Preferences.set({ key: "driverOneId", value: result.oneId }),
@@ -124,10 +143,13 @@ const action = async () => {
     }
   } catch (error: any) {
     if (!error.response) {
-      // show error with toast
+      toast(
+        "Xatolik yuz berdi, boshqatdan urinib ko'ring yoki dasturni boshqatdan ishga tushiring"
+      );
+
       return;
     }
-    // show error with toast
+    toast(error.response.data.msg || error.message);
 
     return;
   }
