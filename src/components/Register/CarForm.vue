@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from "@/stores/auth";
-import { computed, defineAsyncComponent, ref, watch } from "vue";
+import { computed, defineAsyncComponent } from "vue";
 import { vUppercase } from "@/directives/uppercase";
-import { vMaska } from "maska";
-import { TreesIcon } from "lucide-vue-next";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");

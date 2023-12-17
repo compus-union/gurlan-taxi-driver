@@ -1,4 +1,7 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+alert("O'zgartirdim")
+
+</script>
 
 <template>
   <div class="content">
