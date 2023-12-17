@@ -4,25 +4,11 @@ import { Preferences } from "@capacitor/preferences";
 import { onBeforeMount, onMounted, ref } from "vue";
 import { useAuth } from "@/stores/auth";
 import { useMaps } from "@/stores/maps";
+import { toast } from "vue3-toastify";
+import { loadingController } from "@ionic/vue";
 
 const authStore = useAuth();
 const mapsStore = useMaps();
-
-const toastMessage = ref<string>();
-const loadingMessage = ref<string>();
-const openToastBtn = ref<HTMLButtonElement>();
-const openLoadingBtn = ref<HTMLButtonElement>();
-const loadingComponent = ref();
-
-const openLoading = async (message: string) => {
-  loadingMessage.value = message;
-  openLoadingBtn.value?.click();
-};
-
-const openToast = async (message: string) => {
-  toastMessage.value = message;
-  openToastBtn.value?.click();
-};
 
 const check = async () => {
   try {
@@ -36,46 +22,50 @@ const check = async () => {
 
     return;
   } catch (error: any) {
-    // handle the error
+    console.log(error);
+    toast(error.message || error.response.data.msg || error);
   }
 };
 
 const loadMap = async () => {
   try {
     await Promise.allSettled([mapsStore.loadMap("map")]);
-  } catch (error: any) {}
+  } catch (error: any) {
+    console.log(error);
+  }
 };
 
 onMounted(async () => {
-  await openLoading("Yuklanmoqda...");
+  try {
+    setTimeout(async () => {
+      const [checking, loadingMap] = await Promise.allSettled([
+        check(),
+        loadMap(),
+      ]);
 
-  setTimeout(async () => {
-    const [checking, loadingMap] = await Promise.allSettled([
-      check(),
-      loadMap(),
-    ]);
+      if (
+        checking.status === "fulfilled" &&
+        loadingMap.status === "fulfilled"
+      ) {
+        return;
+      }
 
-    if (checking.status === "fulfilled" && loadingMap.status === "fulfilled") {
-      await loadingComponent.value?.dismiss();
-      loadingMessage.value = "";
-      return;
-    }
-
-    await openToast("Nimadir xato ketdi, dasturni boshqatdan ishga tushuring.");
-    return;
-  }, 100);
+      toast("Nimadir xato ketdi, dasturni boshqatdan ishga tushiring");
+    }, 100);
+  } catch (error: any) {
+    toast(error);
+  }
 });
 </script>
 
 <template>
   <div class="default-layout">
-    <router-view></router-view>
+    <div class="h-screen" id="map"></div>
+    <router-view class="fixed bottom-0 h-auto suit-theme-reverse w-full"></router-view>
   </div>
 </template>
 
 <style scoped>
-
-
 img[alt="Google"] {
   display: none;
 }

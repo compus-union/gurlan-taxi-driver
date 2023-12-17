@@ -12,7 +12,7 @@ import { useLoading } from "./loading";
 import { useRouter } from "vue-router";
 import { ResponseStatus } from "@/constants";
 import { UniversalResponseStatus } from "@/constants";
-import { loadingController, toastController } from "@ionic/vue";
+import { loadingController } from "@ionic/vue";
 import { toast } from "vue3-toastify";
 
 interface Driver {
@@ -364,8 +364,9 @@ export const useAuth = defineStore("auth-store", () => {
     token: string;
   }): Promise<void> {
     const loading = await loadingController.create({
-      message: "Yuklanmoqda...",
+      message: "Ma'lumotlaringiz tekshirilmoqda...",
     });
+    await loading.present();
     try {
       const res = await authInstance.get(`/check-logged-in/${payload.oneId}`, {
         headers: { Authorization: `Bearer ${payload.token}` },
@@ -430,7 +431,9 @@ export const useAuth = defineStore("auth-store", () => {
       if (res.data.status === ResponseStatus.DRIVER_LOGIN_DONE) {
         await loading.dismiss();
 
-        toast(res.data.msg);
+        if (router.currentRoute.value.path !== "/home") {
+          toast(res.data.msg);
+        }
 
         await Promise.allSettled([
           Preferences.set({
@@ -589,6 +592,6 @@ export const useAuth = defineStore("auth-store", () => {
     bannedReason,
     login,
     checkIfLoggedIn,
-    restart
+    restart,
   };
 });

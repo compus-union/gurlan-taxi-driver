@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import AuthLayout from "@/layouts/AuthLayout.vue";
-import { computed, onBeforeMount, ref } from "vue";
+import { computed, defineAsyncComponent, onBeforeMount, ref } from "vue";
 import { useAuth } from "@/stores/auth";
 import { Preferences } from "@capacitor/preferences";
 import { vMaska } from "maska";
@@ -10,13 +9,38 @@ import {
   DriverValidation,
   UniversalResponseStatus,
 } from "@/constants";
-import { useLoading } from "@/stores/loading";
 import router from "@/router";
-import { toastController } from "@ionic/vue";
 import { toast } from "vue3-toastify";
+import { loadingController } from "@ionic/vue";
+const Card = defineAsyncComponent(() => {
+  return import("@/components/ui/card/Card.vue");
+});
+const CardContent = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardContent.vue");
+});
+const CardDescription = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardDescription.vue");
+});
+const CardHeader = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardHeader.vue");
+});
+const CardTitle = defineAsyncComponent(() => {
+  return import("@/components/ui/card/CardTitle.vue");
+});
+const Input = defineAsyncComponent(() => {
+  return import("@/components/ui/input/Input.vue");
+});
+const Label = defineAsyncComponent(() => {
+  return import("@/components/ui/label/Label.vue");
+});
+const Button = defineAsyncComponent(() => {
+  return import("@/components/ui/button/Button.vue");
+});
+const Checkbox = defineAsyncComponent(() => {
+  return import("@/components/ui/checkbox/Checkbox.vue");
+});
 
 const authStore = useAuth();
-const loadingStore = useLoading();
 
 const checkValidation = async () => {
   const { value: oneId } = await Preferences.get({ key: "driverOneId" });
@@ -43,7 +67,9 @@ const disableButton = computed(() => {
 });
 
 const action = async () => {
+  const loading = await loadingController.create({message: "Tizimga kirilmoqda..."})
   try {
+    await loading.present()
     const result = await authStore.login({
       oneId: authStore.driver.oneId as string,
       password: authStore.driver.password,
@@ -152,64 +178,62 @@ const action = async () => {
     toast(error.response.data.msg || error.message);
 
     return;
+  } finally {
+    await loading.dismiss()
   }
 };
 </script>
 
 <template>
-  <div
-    class="login-page container mx-auto sm:px-4 px-2 flex items-center justify-center h-screen"
-  >
-    <div class="wrapper">
-      <div class="form border my-border rounded p-4 mt-4">
-        <h5 class="text-xl font-bold">Tizimga kirish</h5>
-        <div class="groups mt-4 space-y-3">
-          <div class="form-group flex flex-col items-start">
-            <label class="mb-1" for="oneId">One Id</label>
-            <input
-              autocomplete="off"
-              required
-              v-model.trim="authStore.driver.oneId"
-              class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
-              type="text"
-              placeholder="One Id"
-              id="oneId"
-              v-maska
-              v-uppercase
-              data-maska="@@#######"
-            />
-          </div>
-          <div class="form-group flex flex-col items-start">
-            <label class="mb-1" for="password">Parolingiz</label>
-            <input
-              required
-              v-model.trim="authStore.driver.password"
-              class="border my-border rounded w-full px-2 py-1 outline-none bg-transparent"
-              :type="showPass ? 'text' : 'password'"
-              placeholder="*****"
-              id="password"
-            />
-          </div>
-          <div class="form-group">
-            <div>Parolni ko'rsatish</div>
-          </div>
-          <button
-            @click="action"
-            :disabled="loadingStore.loading || disableButton"
-            class="default-btn w-full font-bold uppercase"
-            type="button"
-          >
-            KIRISH
-          </button>
+  <div class="container px-2 mx-auto h-screen flex flex-col items-center justify-center py-4">
+    <Card class="bg-primary text-warning-foreground w-full">
+      <CardHeader>
+        <CardTitle>Login</CardTitle>
+        <CardDescription
+          >Sizga berilgan oneId va o'zingiz tergan parol orqali tizimga
+          kiring.</CardDescription
+        >
+      </CardHeader>
+      <CardContent class="space-y-4">
+        <div class="form-group">
+          <Label for="oneId">OneId</Label>
+          <Input
+            v-model:model-value.trim.lazy="authStore.driver.oneId"
+            id="oneId"
+            type="text"
+            required
+            v-uppercase
+            v-maska
+            data-maska="@@#######"
+            placeholder="One Id"
+          />
         </div>
-      </div>
-      <div class="mt-4">
-        Agar tizimga kirishda muammolarga duch kelayotgan bo'lsangiz, quyidagi
-        raqamlarga murojaat qiling: <br />
-        <br />
-        +998 99 944 76 13 <br />
-        +998 95 171 31 47
-      </div>
-    </div>
+        <div class="form-group">
+          <Label for="password">Parol</Label>
+          <Input
+            v-model:model-value.trim.lazy="authStore.driver.password"
+            id="password"
+            :type="showPass ? 'text' : 'password'"
+            placeholder="Parol"
+          />
+        </div>
+        <div class="form-group flex items-center space-x-4">
+          <Checkbox
+            v-model:checked="showPass"
+            class="suit-theme-checkbox"
+            id="showPass"
+          />
+          <Label for="showPass"> Parolni ko'rsatish </Label>
+        </div>
+        <Button
+          @click="action"
+          :disabled="disableButton"
+          class="w-full suit-theme"
+          type="button"
+        >
+          Jo'natish
+        </Button>
+      </CardContent>
+    </Card>
   </div>
 </template>

@@ -4,7 +4,7 @@
 
 @media (prefers-color-scheme: dark) {
   .suit-theme {
-    color: #121212;
+    color: #000;
     background: white;
   }
   .suit-theme-checkbox {
@@ -19,6 +19,20 @@
   }
   .suit-theme-checkbox {
     border: 1px solid black;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .suit-theme-reverse {
+    color: white;
+    background: #000;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .suit-theme-reverse {
+    color: #000;
+    background: white;
   }
 }
 
@@ -79,7 +93,7 @@ ion-loading .loading-wrapper {
   border-radius: 30px;
   font-size: 14px;
   font-weight: 500;
-  @apply space-y-2
+  @apply space-y-2;
 }
 
 @media (prefers-color-scheme: light) {

@@ -9,13 +9,13 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
 
   const watchingCoords = ref<boolean>(true);
 
-  async function getCoordsWithNavigator(): Promise<void> {
+  async function getCoordsWithNavigator() {
     try {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
           lat.value = coords.latitude;
           lng.value = coords.longitude;
-          return { coords };
+          console.log(coords);
         },
         (err) => {
           if (err.message) {
@@ -38,7 +38,7 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
       return { coords: results.coords };
     } catch (error: any) {
       console.log(error);
-      router.push("/no-gps");
+      await router.push("/no-gps");
     }
   }
 
@@ -56,7 +56,7 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
 
       console.log("watch coords disabled");
     } catch (error) {
-      router.push("/no-gps");
+      await router.push("/no-gps");
     }
   }
 
