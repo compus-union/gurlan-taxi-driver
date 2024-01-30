@@ -84,7 +84,7 @@ export const useAuth = defineStore("auth-store", () => {
   async function setCar(payload: Car) {
     car.value = payload;
   }
-
+  
   function setCarSync(payload: Car) {
     car.value = payload;
   }
