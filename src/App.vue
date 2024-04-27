@@ -1,10 +1,10 @@
 <script setup lang="ts">
-alert("O'zgartirdim")
-
+import { Toaster, toast } from "vue-sonner";
 </script>
 
 <template>
   <div class="content">
+    <Toaster position="top-center" :duration="4000" />
     <router-view> </router-view>
   </div>
 </template>

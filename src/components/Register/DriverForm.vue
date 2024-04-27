@@ -1,36 +1,19 @@
 <script setup lang="ts">
 import { useAuth } from "@/stores/auth";
-import { computed, defineAsyncComponent, ref } from "vue";
+import { computed, ref } from "vue";
 import { vMaska } from "maska";
 import { MaskInputOptions } from "maska";
-
-const Card = defineAsyncComponent(() => {
-  return import("@/components/ui/card/Card.vue");
-});
-const CardContent = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardContent.vue");
-});
-const CardDescription = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardDescription.vue");
-});
-const CardHeader = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardHeader.vue");
-});
-const CardTitle = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardTitle.vue");
-});
-const Input = defineAsyncComponent(() => {
-  return import("@/components/ui/input/Input.vue");
-});
-const Label = defineAsyncComponent(() => {
-  return import("@/components/ui/label/Label.vue");
-});
-const Button = defineAsyncComponent(() => {
-  return import("@/components/ui/button/Button.vue");
-});
-const Checkbox = defineAsyncComponent(() => {
-  return import("@/components/ui/checkbox/Checkbox.vue");
-});
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const authStore = useAuth();
 
@@ -80,8 +63,9 @@ const maskOptions = ref({
       <CardHeader>
         <CardTitle>Haydovchi ma'lumotlari</CardTitle>
         <CardDescription
-          >Parol kamida 8 ta belgidan, bitta katta harfdan, faqat lotin harflaridan va raqamlardan
-          tashkil topishi kerak. Bo'sh joy va ortiqcha belgilar bilan yozish mumkin emas.</CardDescription
+          >Parol kamida 8 ta belgidan, bitta katta harfdan, faqat lotin
+          harflaridan va raqamlardan tashkil topishi kerak. Bo'sh joy va
+          ortiqcha belgilar bilan yozish mumkin emas.</CardDescription
         >
       </CardHeader>
       <CardContent class="space-y-4">

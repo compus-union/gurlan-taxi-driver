@@ -10,8 +10,9 @@ import {
   UniversalResponseStatus,
 } from "@/constants";
 import router from "@/router";
-import { toast } from "vue3-toastify";
 import { loadingController } from "@ionic/vue";
+import { toast } from "vue-sonner";
+
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
 });
@@ -67,9 +68,11 @@ const disableButton = computed(() => {
 });
 
 const action = async () => {
-  const loading = await loadingController.create({message: "Tizimga kirilmoqda..."})
+  const loading = await loadingController.create({
+    message: "Tizimga kirilmoqda...",
+  });
   try {
-    await loading.present()
+    await loading.present();
     const result = await authStore.login({
       oneId: authStore.driver.oneId as string,
       password: authStore.driver.password,
@@ -179,13 +182,15 @@ const action = async () => {
 
     return;
   } finally {
-    await loading.dismiss()
+    await loading.dismiss();
   }
 };
 </script>
 
 <template>
-  <div class="container px-2 mx-auto h-screen flex flex-col items-center justify-center py-4">
+  <div
+    class="container px-2 mx-auto h-screen flex flex-col items-center justify-center py-4"
+  >
     <Card class="bg-primary text-warning-foreground w-full">
       <CardHeader>
         <CardTitle>Login</CardTitle>

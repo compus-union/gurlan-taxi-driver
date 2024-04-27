@@ -5,8 +5,8 @@ import { useLoading } from "@/stores/loading";
 import router from "@/router";
 import { authInstance } from "@/http";
 import { ResponseStatus } from "@/constants";
-import { loadingController, toastController } from "@ionic/vue";
-import { toast } from "vue3-toastify";
+import { loadingController } from "@ionic/vue";
+import { toast } from "vue-sonner";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
