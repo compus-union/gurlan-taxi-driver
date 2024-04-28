@@ -17,7 +17,7 @@ withDefaults(defineProps<Props>(), {
   <component
     :is="as"
     :class="cn(buttonVariants({ variant, size }), $attrs.class ?? '')"
-    class="py-6 text-lg"
+    class="py-6"
   >
     <slot />
   </component>

@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { Toaster, toast } from "vue-sonner";
+import { Toaster } from "vue-sonner";
+import { PageTransition } from "vue3-page-transition";
 </script>
 
 <template>
   <div class="content">
     <Toaster position="top-center" :duration="4000" />
-    <router-view> </router-view>
+    <router-view v-slot="{ Component }">
+      <PageTransition name="fade-in-up" appear>
+        <component :is="Component" />
+      </PageTransition>
+    </router-view>
   </div>
 </template>
 

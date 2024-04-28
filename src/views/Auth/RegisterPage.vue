@@ -1,28 +1,13 @@
 <script setup lang="ts">
 import { defineAsyncComponent, ref } from "vue";
 import { InfoIcon } from "lucide-vue-next";
+import CarForm from "@/components/Register/CarForm.vue";
+import DriverForm from "@/components/Register/DriverForm.vue";
+import DocumentsForm from "@/components/Register/DocumentsForm.vue";
+import Alert from "@/components/ui/alert/Alert.vue";
+import AlertDescription from "@/components/ui/alert/AlertDescription.vue";
 
-const CarForm = defineAsyncComponent(() => {
-  return import("@/components/Register/CarForm.vue");
-});
-
-const DriverForm = defineAsyncComponent(() => {
-  return import("@/components/Register/DriverForm.vue");
-});
-
-const DocumentsForm = defineAsyncComponent(() => {
-  return import("@/components/Register/DocumentsForm.vue");
-});
-
-const Alert = defineAsyncComponent(() => {
-  return import("@/components/ui/alert/Alert.vue");
-});
-
-const AlertDescription = defineAsyncComponent(() => {
-  return import("@/components/ui/alert/AlertDescription.vue");
-});
-
-const step = ref(1);
+const step = ref(3);
 
 const addStep = () => {
   if (step.value === 3) {
@@ -46,7 +31,7 @@ const minusStep = () => {
     <DriverForm @next="addStep" v-if="step === 1" />
     <CarForm @next="addStep" @back="minusStep" v-if="step === 2" />
     <DocumentsForm @next="addStep" @back="minusStep" v-if="step === 3" />
-    <Alert class="mt-4">
+    <Alert v-show="step !== 3" class="mt-4">
       <InfoIcon class="w-4 h-4" />
       <AlertDescription>
         Ro'yxatdan o'tishda muammolarga duch kelsangiz, pastdagi telefon

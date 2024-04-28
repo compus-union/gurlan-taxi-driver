@@ -73,7 +73,7 @@ const maskOptions = ref({
           <Label for="fullname">Ism familiya</Label>
           <Input
             required
-            v-model:model-value.trim.lazy="authStore.driver.fullname"
+            v-model:model-value.trim="authStore.driver.fullname"
             id="fullname"
             type="text"
             v-maska:[maskOptions]
@@ -83,7 +83,7 @@ const maskOptions = ref({
         <div class="form-group">
           <Label for="phone">Telefon raqam</Label>
           <Input
-            v-model:model-value.trim.lazy="authStore.driver.phone[0]"
+            v-model:model-value.trim="authStore.driver.phone[0]"
             id="phone"
             type="text"
             required
@@ -96,7 +96,7 @@ const maskOptions = ref({
           <Label for="password">Parol</Label>
           <Input
             required
-            v-model:model-value.trim.lazy="authStore.driver.password"
+            v-model:model-value.trim="authStore.driver.password"
             id="password"
             :type="showPass ? 'text' : 'password'"
             placeholder="******"
