@@ -49,6 +49,41 @@ const routes: Array<RouteRecordRaw> = [
           next();
         },
       },
+      {
+        path: "demo",
+        component: () => import("@/views/Default/DemoPage.vue"),
+        name: "default-layout-demo-page",
+        async beforeEnter(to, from, next) {
+          const { value: token } = await Preferences.get({ key: "auth_token" });
+          const { value: oneId } = await Preferences.get({
+            key: "driverOneId",
+          });
+          const { value: validation } = await Preferences.get({
+            key: "validation",
+          });
+          const { value: banned } = await Preferences.get({ key: "banned" });
+
+          if (validation === DriverValidation.SUCCESS && oneId && token) {
+            return next();
+          }
+          if (!validation && !oneId && !token && !banned) {
+            return next("/auth/register");
+          }
+          if (validation === DriverValidation.WAITING && oneId && token) {
+            return next("/auth/validation-waiting");
+          }
+          if (validation === DriverValidation.INVALIDATED && oneId && token) {
+            return next("/auth/invalidation");
+          }
+          if (validation === DriverValidation.VALIDATED && oneId && token) {
+            return next("/auth/login");
+          }
+          if (!validation && banned === "true") {
+            return next("/auth/banned");
+          }
+          next();
+        },
+      },
     ],
   },
   {

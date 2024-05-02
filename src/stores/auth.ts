@@ -13,7 +13,7 @@ import { useRouter } from "vue-router";
 import { ResponseStatus } from "@/constants";
 import { UniversalResponseStatus } from "@/constants";
 import { loadingController } from "@ionic/vue";
-import { toast } from "vue3-toastify";
+import { toast } from "vue-sonner";
 
 interface Driver {
   id?: string;
@@ -84,7 +84,7 @@ export const useAuth = defineStore("auth-store", () => {
   async function setCar(payload: Car) {
     car.value = payload;
   }
-  
+
   function setCarSync(payload: Car) {
     car.value = payload;
   }

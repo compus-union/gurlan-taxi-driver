@@ -5,8 +5,8 @@ import { useLoading } from "@/stores/loading";
 import router from "@/router";
 import { authInstance } from "@/http";
 import { ResponseStatus } from "@/constants";
-import { loadingController, toastController } from "@ionic/vue";
-import { toast } from "vue3-toastify";
+import { loadingController } from "@ionic/vue";
+import { toast } from "vue-sonner";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
@@ -197,15 +197,15 @@ const disableButton = computed(() => {
           alohida alohida joylashtirish lozim</CardDescription
         >
       </CardHeader>
-      <CardContent class="space-y-4">
-        <div class="wrapper">
+      <CardContent class="space-y-2">
+        <div class="wrapper -mb-6">
           <CardTitle>Haydovchilik guvohnomasi</CardTitle>
-          <div class="groups flex gap-x-6">
+          <div class="groups flex gap-x-4">
             <div class="form-group w-full flex flex-col">
               <div
-                class="icon flex flex-col items-center justify-center w-[90%] my-3 h-[50%]"
+                class="icon flex flex-col items-center justify-center w-[50%] my-3 h-[30%]"
               >
-                <PravaFrontIcon v-show="!pravaFrontImg" class="w-full" />
+                <PravaFrontIcon v-show="!pravaFrontImg" class="w-full h-full" />
                 <img
                   v-show="pravaFrontImg"
                   class="w-full h-full object-cover"
@@ -214,7 +214,7 @@ const disableButton = computed(() => {
                 />
               </div>
               <Label for="pravaFront" class="w-full">Old tomoni</Label
-              ><Button variant="outline" class="overflow-hidden w-full"
+              ><Button variant="outline" class="overflow-hidden w-full py-4"
                 ><Label for="pravaFront">Yuklash</Label></Button
               >
               <Input
@@ -227,7 +227,7 @@ const disableButton = computed(() => {
             </div>
             <div class="form-group w-full flex flex-col">
               <div
-                class="icon flex flex-col items-center justify-center w-[90%] my-3 h-[50%]"
+                class="icon flex flex-col items-center justify-center w-[50%] my-3 h-[30%]"
               >
                 <PravaTexBackIcon v-show="!pravaBackImg" class="w-full" />
                 <img
@@ -238,7 +238,7 @@ const disableButton = computed(() => {
                 />
               </div>
               <Label for="pravaBack" class="w-full">Orqa tomoni</Label
-              ><Button variant="outline" class="overflow-hidden w-full"
+              ><Button variant="outline" class="overflow-hidden w-full py-4"
                 ><Label for="pravaBack">Yuklash</Label></Button
               >
               <Input
@@ -253,10 +253,10 @@ const disableButton = computed(() => {
         </div>
         <div class="wrapper">
           <CardTitle>Avtomobil pasporti</CardTitle>
-          <div class="groups flex gap-x-6">
+          <div class="groups flex gap-x-4">
             <div class="form-group w-full flex flex-col">
               <div
-                class="icon flex flex-col items-center justify-center w-[90%] my-3 h-[50%]"
+                class="icon flex flex-col items-center justify-center w-[50%] my-3 h-[30%]"
               >
                 <TexFrontIcon v-show="!texFrontImg" class="w-full" />
                 <img
@@ -267,7 +267,7 @@ const disableButton = computed(() => {
                 />
               </div>
               <Label for="texFront" class="w-full">Old tomoni</Label
-              ><Button variant="outline" class="overflow-hidden w-full"
+              ><Button variant="outline" class="overflow-hidden w-full py-4"
                 ><Label for="texFront">Yuklash</Label></Button
               >
               <Input
@@ -280,7 +280,7 @@ const disableButton = computed(() => {
             </div>
             <div class="form-group w-full flex flex-col">
               <div
-                class="icon flex flex-col items-center justify-center w-[90%] my-3 h-[50%]"
+                class="icon flex flex-col items-center justify-center w-[50%] my-3 h-[30%]"
               >
                 <PravaTexBackIcon v-show="!texBackImg" class="w-full" />
                 <img
@@ -291,7 +291,7 @@ const disableButton = computed(() => {
                 />
               </div>
               <Label for="texBack" class="w-full">Orqa tomoni</Label
-              ><Button variant="outline" class="overflow-hidden w-full"
+              ><Button variant="outline" class="overflow-hidden w-full py-4"
                 ><Label for="texBack">Yuklash</Label></Button
               >
               <Input

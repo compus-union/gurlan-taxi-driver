@@ -1,11 +1,10 @@
 <script lang="ts" setup>
 import { Preferences } from "@capacitor/preferences";
+import { toast } from "vue-sonner";
 
-import { onBeforeMount, onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import { useAuth } from "@/stores/auth";
 import { useMaps } from "@/stores/maps";
-import { toast } from "vue3-toastify";
-import { loadingController } from "@ionic/vue";
 
 const authStore = useAuth();
 const mapsStore = useMaps();
@@ -61,7 +60,9 @@ onMounted(async () => {
 <template>
   <div class="default-layout">
     <div class="h-screen" id="map"></div>
-    <router-view class="fixed bottom-0 h-auto suit-theme-reverse w-full"></router-view>
+    <router-view
+      class="fixed bottom-0 h-auto suit-theme-reverse w-full"
+    ></router-view>
   </div>
 </template>
 
