@@ -30,7 +30,9 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
 
   async function getCoords() {
     try {
-      const results = await Geolocation.getCurrentPosition();
+      const results = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+      });
 
       lat.value = results.coords.latitude;
       lng.value = results.coords.longitude;
@@ -79,5 +81,7 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
     watchCoords,
     changeCoords,
     getCoordsWithNavigator,
+    lat,
+    lng,
   };
 });

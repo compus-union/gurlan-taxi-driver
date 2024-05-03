@@ -7,6 +7,7 @@ import { authInstance } from "@/http";
 import { ResponseStatus } from "@/constants";
 import { loadingController } from "@ionic/vue";
 import { toast } from "vue-sonner";
+import { storeToRefs } from "pinia";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
@@ -47,6 +48,7 @@ const formData = new FormData();
 
 const events = defineEmits(["next", "back"]);
 const authStore = useAuth();
+const { car, driver } = storeToRefs(authStore);
 
 const files = ref<File[]>([]);
 
@@ -97,8 +99,12 @@ const action = async () => {
   try {
     await loading.present();
     const result = await authStore.register({
-      driver: authStore.driver,
-      car: authStore.car,
+      driver: driver.value,
+      car: {
+        name: car.value.name.toUpperCase(),
+        color: car.value.color.toUpperCase(),
+        number: car.value.number.toUpperCase(),
+      },
       files: formData,
     });
 

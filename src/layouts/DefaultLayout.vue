@@ -5,9 +5,11 @@ import { toast } from "vue-sonner";
 import { onMounted } from "vue";
 import { useAuth } from "@/stores/auth";
 import { useMaps } from "@/stores/maps";
+import { useOriginCoords } from "@/stores/origin";
 
 const authStore = useAuth();
 const mapsStore = useMaps();
+const originCoords = useOriginCoords()
 
 const check = async () => {
   try {
@@ -28,29 +30,27 @@ const check = async () => {
 
 const loadMap = async () => {
   try {
-    await Promise.allSettled([mapsStore.loadMap("map")]);
+    await mapsStore.loadMap("map");
   } catch (error: any) {
     console.log(error);
   }
 };
 
+const getCoords = async () => {
+  try {
+    await originCoords.getCoords()
+    return
+  } catch (error: any) {
+    console.log(error);
+    toast(error)
+  }
+}
+
 onMounted(async () => {
   try {
-    setTimeout(async () => {
-      const [checking, loadingMap] = await Promise.allSettled([
-        check(),
-        loadMap(),
-      ]);
-
-      if (
-        checking.status === "fulfilled" &&
-        loadingMap.status === "fulfilled"
-      ) {
-        return;
-      }
-
-      toast("Nimadir xato ketdi, dasturni boshqatdan ishga tushiring");
-    }, 100);
+    await check();
+    await getCoords()
+    await loadMap();
   } catch (error: any) {
     toast(error);
   }
@@ -59,9 +59,9 @@ onMounted(async () => {
 
 <template>
   <div class="default-layout">
-    <div class="h-screen" id="map"></div>
+    <div class="h-screen z-[49]" id="map"></div>
     <router-view
-      class="fixed bottom-0 h-auto suit-theme-reverse w-full"
+      class="fixed bottom-0 h-auto suit-theme-reverse w-full z-50"
     ></router-view>
   </div>
 </template>

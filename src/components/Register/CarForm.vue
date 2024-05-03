@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from "@/stores/auth";
 import { computed, defineAsyncComponent } from "vue";
-import { vUppercase } from "@/directives/uppercase";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
@@ -55,31 +54,31 @@ const events = defineEmits(["next", "back"]);
         <div class="form-group">
           <Label for="name">Mashina rusum</Label>
           <Input
-            v-model:model-value.trim.lazy="authStore.car.name"
+            v-model:model-value.trim="authStore.car.name"
+            class="uppercase"
             id="name"
             type="text"
             required
-            v-uppercase
             placeholder="COBALT"
           />
         </div>
         <div class="form-group">
           <Label for="number">Mashina raqam</Label>
           <Input
-            v-model:model-value.trim.lazy="authStore.car.number"
+            v-model:model-value.trim="authStore.car.number"
+            class="uppercase"
             id="number"
             type="text"
-            v-uppercase
             placeholder="90 A 999 AA"
           />
         </div>
         <div class="form-group">
           <Label for="color">Rangi</Label>
           <Input
-            v-model:model-value.trim.lazy="authStore.car.color"
+            v-model:model-value.trim="authStore.car.color"
+            class="uppercase"
             id="color"
             type="text"
-            v-uppercase
             placeholder="QORA"
           />
         </div>
