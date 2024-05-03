@@ -66,7 +66,12 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
+<style>
+.custom-style {
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 8px -2px rgba(0, 0, 0, 0.2);
+}
+
 img[alt="Google"] {
   display: none;
 }

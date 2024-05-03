@@ -50,9 +50,9 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
-        path: "demo",
-        component: () => import("@/views/Default/DemoPage.vue"),
-        name: "default-layout-demo-page",
+        path: "deactivated",
+        component: () => import("@/views/Default/DeactivatedPage.vue"),
+        name: "default-layout-deactivated-page",
         async beforeEnter(to, from, next) {
           const { value: token } = await Preferences.get({ key: "auth_token" });
           const { value: oneId } = await Preferences.get({
