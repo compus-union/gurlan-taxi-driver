@@ -12,77 +12,47 @@ const routes: Array<RouteRecordRaw> = [
     path: "/home",
     name: "default-layout",
     component: () => import("@/layouts/DefaultLayout.vue"),
+    async beforeEnter(to, from, next) {
+      const { value: token } = await Preferences.get({ key: "auth_token" });
+      const { value: oneId } = await Preferences.get({
+        key: "driverOneId",
+      });
+      const { value: validation } = await Preferences.get({
+        key: "validation",
+      });
+      const { value: banned } = await Preferences.get({ key: "banned" });
 
+      if (validation === DriverValidation.SUCCESS && oneId && token) {
+        return next();
+      }
+      if (!validation && !oneId && !token && !banned) {
+        return next("/auth/register");
+      }
+      if (validation === DriverValidation.WAITING && oneId && token) {
+        return next("/auth/validation-waiting");
+      }
+      if (validation === DriverValidation.INVALIDATED && oneId && token) {
+        return next("/auth/invalidation");
+      }
+      if (validation === DriverValidation.VALIDATED && oneId && token) {
+        return next("/auth/login");
+      }
+      if (!validation && banned === "true") {
+        return next("/auth/banned");
+      }
+      return next();
+    },
     children: [
       {
         path: "",
         component: () => import("@/views/Default/HomePage.vue"),
         name: "default-layout-home-page",
-        async beforeEnter(to, from, next) {
-          const { value: token } = await Preferences.get({ key: "auth_token" });
-          const { value: oneId } = await Preferences.get({
-            key: "driverOneId",
-          });
-          const { value: validation } = await Preferences.get({
-            key: "validation",
-          });
-          const { value: banned } = await Preferences.get({ key: "banned" });
-
-          if (validation === DriverValidation.SUCCESS && oneId && token) {
-            return next();
-          }
-          if (!validation && !oneId && !token && !banned) {
-            return next("/auth/register");
-          }
-          if (validation === DriverValidation.WAITING && oneId && token) {
-            return next("/auth/validation-waiting");
-          }
-          if (validation === DriverValidation.INVALIDATED && oneId && token) {
-            return next("/auth/invalidation");
-          }
-          if (validation === DriverValidation.VALIDATED && oneId && token) {
-            return next("/auth/login");
-          }
-          if (!validation && banned === "true") {
-            return next("/auth/banned");
-          }
-          next();
-        },
       },
       {
         path: "deactivated",
         component: () => import("@/views/Default/DeactivatedPage.vue"),
         name: "default-layout-deactivated-page",
-        async beforeEnter(to, from, next) {
-          const { value: token } = await Preferences.get({ key: "auth_token" });
-          const { value: oneId } = await Preferences.get({
-            key: "driverOneId",
-          });
-          const { value: validation } = await Preferences.get({
-            key: "validation",
-          });
-          const { value: banned } = await Preferences.get({ key: "banned" });
 
-          if (validation === DriverValidation.SUCCESS && oneId && token) {
-            return next();
-          }
-          if (!validation && !oneId && !token && !banned) {
-            return next("/auth/register");
-          }
-          if (validation === DriverValidation.WAITING && oneId && token) {
-            return next("/auth/validation-waiting");
-          }
-          if (validation === DriverValidation.INVALIDATED && oneId && token) {
-            return next("/auth/invalidation");
-          }
-          if (validation === DriverValidation.VALIDATED && oneId && token) {
-            return next("/auth/login");
-          }
-          if (!validation && banned === "true") {
-            return next("/auth/banned");
-          }
-          next();
-        },
       },
     ],
   },
@@ -271,6 +241,42 @@ const routes: Array<RouteRecordRaw> = [
       },
     ],
   },
+  {
+    path: "/options",
+    name: "options-layout",
+    component: () => import("@/layouts/OptionsLayout.vue"),
+    async beforeEnter(to, from, next) {
+      const { value: token } = await Preferences.get({ key: "auth_token" });
+      const { value: oneId } = await Preferences.get({
+        key: "driverOneId",
+      });
+      const { value: validation } = await Preferences.get({
+        key: "validation",
+      });
+      const { value: banned } = await Preferences.get({ key: "banned" });
+
+      if (validation === DriverValidation.SUCCESS && oneId && token) {
+        return next();
+      }
+      if (!validation && !oneId && !token && !banned) {
+        return next("/auth/register");
+      }
+      if (validation === DriverValidation.WAITING && oneId && token) {
+        return next("/auth/validation-waiting");
+      }
+      if (validation === DriverValidation.INVALIDATED && oneId && token) {
+        return next("/auth/invalidation");
+      }
+      if (validation === DriverValidation.VALIDATED && oneId && token) {
+        return next("/auth/login");
+      }
+      if (!validation && banned === "true") {
+        return next("/auth/banned");
+      }
+
+      return next()
+    },
+  }
 ];
 
 const router = createRouter({

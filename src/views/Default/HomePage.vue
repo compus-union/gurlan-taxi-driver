@@ -18,7 +18,7 @@ async function schedule() {
 </script>
 
 <template>
-  <div>
-    <button @click="schedule">Redirect</button>
+  <div class="home-page">
+
   </div>
 </template>
