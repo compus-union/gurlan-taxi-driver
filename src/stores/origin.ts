@@ -30,6 +30,8 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
 
   async function getCoords() {
     try {
+      const permission = await Geolocation.checkPermissions();
+
       const results = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
       });

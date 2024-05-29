@@ -52,7 +52,6 @@ const routes: Array<RouteRecordRaw> = [
         path: "deactivated",
         component: () => import("@/views/Default/DeactivatedPage.vue"),
         name: "default-layout-deactivated-page",
-
       },
     ],
   },
@@ -92,10 +91,8 @@ const routes: Array<RouteRecordRaw> = [
           if (!validation && banned === "true") {
             return next("/auth/banned");
           }
-          if (!token && !oneId && !validation && !banned) {
-            return next("/auth/register");
-          }
-          next();
+
+          return next();
         },
       },
       {
@@ -239,6 +236,41 @@ const routes: Array<RouteRecordRaw> = [
           next();
         },
       },
+      {
+        path: "emergency-login",
+        name: "emergency-login-page",
+        component: () => import("@/views/Auth/EmergencyLoginPage.vue"),
+        async beforeEnter(to, from, next) {
+          const { value: token } = await Preferences.get({ key: "auth_token" });
+          const { value: oneId } = await Preferences.get({
+            key: "driverOneId",
+          });
+          const { value: validation } = await Preferences.get({
+            key: "validation",
+          });
+          const { value: banned } = await Preferences.get({ key: "banned" });
+          if (!validation && !oneId && !token && !banned) {
+            return next();
+          }
+          if (validation === DriverValidation.SUCCESS && oneId && token) {
+            return next("/home");
+          }
+          if (validation === DriverValidation.WAITING && oneId && token) {
+            return next("/auth/validation-waiting");
+          }
+          if (validation === DriverValidation.INVALIDATED && oneId && token) {
+            return next("/auth/invalidation");
+          }
+          if (validation === DriverValidation.VALIDATED && oneId && token) {
+            return next("/auth/login");
+          }
+          if (!validation && banned === "true") {
+            return next("/auth/banned");
+          }
+
+          return next();
+        },
+      },
     ],
   },
   {
@@ -274,9 +306,9 @@ const routes: Array<RouteRecordRaw> = [
         return next("/auth/banned");
       }
 
-      return next()
+      return next();
     },
-  }
+  },
 ];
 
 const router = createRouter({

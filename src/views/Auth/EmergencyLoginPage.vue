@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onBeforeMount, ref } from "vue";
+import { computed, ref } from "vue";
 import { useAuth } from "@/stores/auth";
 import { Preferences } from "@capacitor/preferences";
 import { vMaska } from "maska";
@@ -12,55 +12,20 @@ import {
 import router from "@/router";
 import { loadingController } from "@ionic/vue";
 import { toast } from "vue-sonner";
-
-const Card = defineAsyncComponent(() => {
-  return import("@/components/ui/card/Card.vue");
-});
-const CardContent = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardContent.vue");
-});
-const CardDescription = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardDescription.vue");
-});
-const CardHeader = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardHeader.vue");
-});
-const CardTitle = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardTitle.vue");
-});
-const Input = defineAsyncComponent(() => {
-  return import("@/components/ui/input/Input.vue");
-});
-const Label = defineAsyncComponent(() => {
-  return import("@/components/ui/label/Label.vue");
-});
-const Button = defineAsyncComponent(() => {
-  return import("@/components/ui/button/Button.vue");
-});
-const Checkbox = defineAsyncComponent(() => {
-  return import("@/components/ui/checkbox/Checkbox.vue");
-});
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { storeToRefs } from "pinia";
 
 const authStore = useAuth();
-
-const checkValidation = async () => {
-  const { value: oneId } = await Preferences.get({ key: "driverOneId" });
-  const { value: token } = await Preferences.get({ key: "auth_token" });
-
-  await authStore.checkIfValidated({ oneId, token });
-};
+const { driver } = storeToRefs(authStore);
 
 const showPass = ref<boolean>();
 
-onBeforeMount(async () => {
-  await checkValidation();
-});
-
 const disableButton = computed(() => {
-  if (
-    authStore.driver?.password.length >= 8 &&
-    authStore.driver?.oneId?.length === 9
-  ) {
+  if (driver.value.password.length >= 8 && driver.value.oneId?.length === 9 && driver.value.emergencyPassword.length >= 5) {
     return false;
   } else {
     return true;
@@ -74,10 +39,10 @@ const action = async () => {
   try {
     await loading.present();
     const result = await authStore.login({
-      oneId: authStore.driver.oneId as string,
-      password: authStore.driver.password,
-      emergencyPassword: ""
-    }, "simple");
+      oneId: driver.value.oneId as string,
+      password: driver.value.password,
+      emergencyPassword: driver.value.emergencyPassword
+    }, "emergency");
 
     if (result.status === ResponseStatus.AUTH_WARNING) {
       toast(result.msg);
@@ -193,18 +158,11 @@ const action = async () => {
     class="container px-2 mx-auto h-screen flex flex-col items-center justify-center py-4"
   >
     <Card class="bg-primary text-warning-foreground w-full">
-      <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription
-          >Sizga berilgan oneId va o'zingiz tergan parol orqali tizimga
-          kiring.</CardDescription
-        >
-      </CardHeader>
-      <CardContent class="space-y-4">
+      <CardContent class="space-y-4 py-6">
         <div class="form-group">
           <Label for="oneId">OneId</Label>
           <Input
-            v-model:model-value.trim.lazy="authStore.driver.oneId"
+            v-model:model-value.trim.lazy="driver.oneId"
             id="oneId"
             type="text"
             required
@@ -217,10 +175,20 @@ const action = async () => {
         <div class="form-group">
           <Label for="password">Parol</Label>
           <Input
-            v-model:model-value.trim.lazy="authStore.driver.password"
+            v-model:model-value.trim.lazy="driver.password"
             id="password"
             :type="showPass ? 'text' : 'password'"
             placeholder="Parol"
+          />
+        </div>
+        <div class="form-group">
+          <Label for="oneId">Favqulodda kod</Label>
+          <Input
+            v-model:model-value.trim.lazy="driver.emergencyPassword"
+            id="emergencyPassword"
+            :type="showPass ? 'text' : 'password'"
+            required
+            placeholder="Favqulodda kod"
           />
         </div>
         <div class="form-group flex items-center space-x-4">

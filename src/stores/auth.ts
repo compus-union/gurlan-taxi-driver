@@ -55,6 +55,7 @@ export const useAuth = defineStore("auth-store", () => {
     fullname: "",
     password: "",
     phone: ["+998"],
+    emergencyPassword: "",
   });
   const car = ref<Car>({
     name: "",
@@ -472,7 +473,10 @@ export const useAuth = defineStore("auth-store", () => {
     }
   }
 
-  async function login(payload: { oneId: string; password: string }): Promise<{
+  async function login(
+    payload: { oneId: string; password: string; emergencyPassword: string },
+    type: "emergency" | "simple"
+  ): Promise<{
     msg: string;
     status: UniversalResponseStatus | ResponseStatus;
     [propName: string]: any;
@@ -481,9 +485,13 @@ export const useAuth = defineStore("auth-store", () => {
       await loadingStore.setLoading(true);
       const { value: token } = await Preferences.get({ key: "auth_token" });
 
-      const res = await authInstance.post("/login", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authInstance.post(
+        type === "emergency" ? "/emergency-login" : "/login",
+        { ...payload, emergencyLogin: type === "emergency" ? true : false },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (res.status >= 400) {
         return {
