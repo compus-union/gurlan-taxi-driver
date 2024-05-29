@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from "@/stores/auth";
 import { computed, defineAsyncComponent } from "vue";
+import { vMaska } from "maska";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");
@@ -55,11 +56,11 @@ const events = defineEmits(["next", "back"]);
           <Label for="name">Mashina rusum</Label>
           <Input
             v-model:model-value.trim="authStore.car.name"
-            class="uppercase"
             id="name"
             type="text"
             required
-            placeholder="COBALT"
+            placeholder="Cobalt"
+            :pattern="/^[-@./#&+\w\s]*$/"
           />
         </div>
         <div class="form-group">
@@ -91,7 +92,12 @@ const events = defineEmits(["next", "back"]);
         >
           Keyingisi
         </Button>
-        <Button @click="events('back')" type="button" class="w-full" variant="outline">
+        <Button
+          @click="events('back')"
+          type="button"
+          class="w-full"
+          variant="outline"
+        >
           Orqaga
         </Button>
       </CardContent>

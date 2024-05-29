@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref } from "vue";
+import { ref } from "vue";
 import { InfoIcon } from "lucide-vue-next";
 import CarForm from "@/components/Register/CarForm.vue";
 import DriverForm from "@/components/Register/DriverForm.vue";

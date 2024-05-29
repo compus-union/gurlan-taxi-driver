@@ -8,31 +8,11 @@ import { ResponseStatus } from "@/constants";
 import { loadingController } from "@ionic/vue";
 import { toast } from "vue-sonner";
 import { storeToRefs } from "pinia";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
-const Card = defineAsyncComponent(() => {
-  return import("@/components/ui/card/Card.vue");
-});
-const CardContent = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardContent.vue");
-});
-const CardDescription = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardDescription.vue");
-});
-const CardHeader = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardHeader.vue");
-});
-const CardTitle = defineAsyncComponent(() => {
-  return import("@/components/ui/card/CardTitle.vue");
-});
-const Label = defineAsyncComponent(() => {
-  return import("@/components/ui/label/Label.vue");
-});
-const Input = defineAsyncComponent(() => {
-  return import("@/components/ui/input/Input.vue");
-});
-const Button = defineAsyncComponent(() => {
-  return import("@/components/ui/button/Button.vue");
-});
 const PravaFrontIcon = defineAsyncComponent(() => {
   return import("@/components/custom-icons/PravaFront.vue");
 });
@@ -198,10 +178,6 @@ const disableButton = computed(() => {
     <Card class="bg-primary text-warning-foreground w-full">
       <CardHeader>
         <CardTitle>Haydovchi hujjatlari</CardTitle>
-        <CardDescription
-          >So'ralgan hujjatlarning orqa va oldi tomonlarini rasm holatida
-          alohida alohida joylashtirish lozim</CardDescription
-        >
       </CardHeader>
       <CardContent class="space-y-2">
         <div class="wrapper -mb-6">

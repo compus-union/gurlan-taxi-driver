@@ -6,7 +6,6 @@ import { MaskInputOptions } from "maska";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -58,15 +57,10 @@ const maskOptions = ref({
 </script>
 
 <template>
-  <div class="driver-form">
+  <div class="driver-form w-full">
     <Card class="bg-primary text-warning-foreground w-full">
       <CardHeader>
         <CardTitle>Haydovchi ma'lumotlari</CardTitle>
-        <CardDescription
-          >Parol kamida 8 ta belgidan, bitta katta harfdan, faqat lotin
-          harflaridan va raqamlardan tashkil topishi kerak. Bo'sh joy va
-          ortiqcha belgilar bilan yozish mumkin emas.</CardDescription
-        >
       </CardHeader>
       <CardContent class="space-y-4">
         <div class="form-group">
@@ -96,6 +90,7 @@ const maskOptions = ref({
           <Label for="password">Parol</Label>
           <Input
             required
+            pattern="/^[-@./#&+\w\s]*$/"
             v-model:model-value.trim="authStore.driver.password"
             id="password"
             :type="showPass ? 'text' : 'password'"
