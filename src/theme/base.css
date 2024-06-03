@@ -73,15 +73,15 @@ ion-loading .loading-wrapper {
 
 @media (prefers-color-scheme: light) {
   .Toastify__toast {
-    background: #000;
-    color: #fff;
+    background: #fff;
+    color: #000;
   }
 }
 
 @media (prefers-color-scheme: dark) {
   .Toastify__toast {
-    background: #fff;
-    color: #000;
+    background: #000;
+    color: #fff;
   }
 }
 
@@ -98,15 +98,15 @@ ion-loading .loading-wrapper {
 
 @media (prefers-color-scheme: light) {
   ion-loading .loading-wrapper {
-    background: #000;
-    color: #fff;
+    background: #fff;
+    color: #000;
   }
 }
 
 @media (prefers-color-scheme: dark) {
   ion-loading .loading-wrapper {
-    background: #fff;
-    color: #000;
+    background: #000;
+    color: #fff;
   }
 }
 

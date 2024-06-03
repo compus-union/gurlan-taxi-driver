@@ -6,6 +6,16 @@ import { onMounted } from "vue";
 import { useAuth } from "@/stores/auth";
 import { useMaps } from "@/stores/maps";
 import { useOriginCoords } from "@/stores/origin";
+import { PageTransition } from "vue3-page-transition";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { AlignJustify } from "lucide-vue-next";
+import { User } from "lucide-vue-next";
 
 const authStore = useAuth();
 const mapsStore = useMaps();
@@ -59,6 +69,25 @@ onMounted(async () => {
 
 <template>
   <div class="default-layout">
+    <nav class="navbar suit-theme-reverse mx-auto p-2 flex items-start">
+      <DropdownMenu class="suit-theme-reverse">
+        <DropdownMenuTrigger>
+          <button
+            class="bg-primary-foreground p-2 flex items-center text-primary rounded-full"
+          >
+            <AlignJustify :size="24" /></button
+        ></DropdownMenuTrigger>
+        <DropdownMenuContent
+          class="font-manrope font-semibold space-y-2 border-none"
+        >
+          <DropdownMenuItem class="text-lg">
+            <User class="mr-2"/> Akkauntim
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <div class="right"></div>
+    </nav>
     <div class="h-screen z-[49]" id="map"></div>
     <router-view
       class="h-auto fixed bottom-0 w-full z-[49]"

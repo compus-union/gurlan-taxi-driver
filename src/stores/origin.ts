@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { Geolocation } from "@capacitor/geolocation";
 import router from "@/router";
+import { App } from "@capacitor/app";
 
 export const useOriginCoords = defineStore("origin-coords-store", () => {
   const lat = ref<number>(0);
@@ -32,6 +33,21 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
     try {
       const permission = await Geolocation.checkPermissions();
 
+      if (
+        permission.location === "denied" &&
+        permission.coarseLocation === "denied"
+      ) {
+        const askPermission = await Geolocation.requestPermissions({
+          permissions: ["coarseLocation", "location"],
+        });
+        if (
+          askPermission.coarseLocation === "denied" &&
+          permission.location === "denied"
+        ) {
+          await App.exitApp();
+        }
+      }
+
       const results = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
       });
@@ -42,7 +58,7 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
       return { coords: results.coords };
     } catch (error: any) {
       console.log(error);
-      await router.push("/no-gps");
+      alert(error)
     }
   }
 
