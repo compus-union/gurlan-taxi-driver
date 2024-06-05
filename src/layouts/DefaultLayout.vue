@@ -69,7 +69,7 @@ onMounted(async () => {
 
 <template>
   <div class="default-layout">
-    <nav class="navbar suit-theme-reverse mx-auto p-2 flex items-start">
+    <nav class="navbar suit-theme-reverse mx-auto p-2 flex items-center">
       <DropdownMenu class="suit-theme-reverse">
         <DropdownMenuTrigger>
           <button
@@ -81,12 +81,12 @@ onMounted(async () => {
           class="font-manrope font-semibold space-y-2 border-none"
         >
           <DropdownMenuItem class="text-lg">
-            <User class="mr-2"/> Akkauntim
+            <User class="mr-2" /> Akkauntim
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div class="right"></div>
+      <div class="right text-lg ml-2">Bugun: 233,000 so'm</div>
     </nav>
     <div class="h-screen z-[49]" id="map"></div>
     <router-view
