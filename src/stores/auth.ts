@@ -432,10 +432,6 @@ export const useAuth = defineStore("auth-store", () => {
       if (res.data.status === ResponseStatus.DRIVER_LOGIN_DONE) {
         await loading.dismiss();
 
-        if (router.currentRoute.value.path !== "/home") {
-          toast(res.data.msg);
-        }
-
         await Promise.allSettled([
           Preferences.set({
             key: "validation",
