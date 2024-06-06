@@ -1,24 +1,12 @@
 <script lang="ts" setup>
-import { LocalNotifications } from "@capacitor/local-notifications";
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-
-async function schedule() {
-  await LocalNotifications.schedule({
-    notifications: [
-      {
-        title: "Mijoz sizni kutmoqda",
-        body: "Mijoz sizni manzilida kutib turibdi, uni kuttirib qo'ymang",
-        id: 2,
-      },
-    ],
-  });
-}
+import { Button } from '@/components/ui/button';
+import { List } from 'lucide-vue-next';
+  
 </script>
 
 <template>
-  <div>
-    <button @click="schedule">Redirect</button>
+  <div class="home-page suit-theme-reverse h-auto w-full custom-style p-6">
+    <h1 class="text-xl flex items-center mb-4"><span class="online w-3 h-3 bg-green-400 rounded-full mr-2"></span> 26 haydovchilar</h1>
+    <Button class="suit-theme w-full"><List class="mr-2"/> Buyurtmalar</Button>
   </div>
 </template>

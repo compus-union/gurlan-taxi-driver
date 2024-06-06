@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref } from "vue";
+import { ref } from "vue";
 import { InfoIcon } from "lucide-vue-next";
 import CarForm from "@/components/Register/CarForm.vue";
 import DriverForm from "@/components/Register/DriverForm.vue";
@@ -7,6 +7,7 @@ import DocumentsForm from "@/components/Register/DocumentsForm.vue";
 import Alert from "@/components/ui/alert/Alert.vue";
 import AlertDescription from "@/components/ui/alert/AlertDescription.vue";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import router from "@/router";
 
 const step = ref(1);
 
@@ -23,18 +24,9 @@ const minusStep = () => {
   }
   step.value--;
 };
-async function schedule() {
-  setTimeout(async () => {
-    await LocalNotifications.schedule({
-      notifications: [
-        {
-          title: "Mijoz sizni kutmoqda",
-          body: "Mijoz sizni manzilida kutib turibdi, uni kuttirib qo'ymang",
-          id: 2,
-        },
-      ],
-    });
-  }, 5000);
+
+async function goToEmergencyLogin() {
+  await router.push("/auth/emergency-login")
 }
 </script>
 
@@ -45,8 +37,7 @@ async function schedule() {
     <DriverForm @next="addStep" v-if="step === 1" />
     <CarForm @next="addStep" @back="minusStep" v-if="step === 2" />
     <DocumentsForm @next="addStep" @back="minusStep" v-if="step === 3" />
-    <button @click="schedule">Redirect</button>
-
+    <button class="underline mt-2" @click="goToEmergencyLogin">Favqulodda login</button>
     <Alert v-show="step !== 3" class="mt-4">
       <InfoIcon class="w-4 h-4" />
       <AlertDescription>

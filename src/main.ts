@@ -5,6 +5,7 @@ import { createPinia } from "pinia";
 import { Vue3ProgressPlugin } from "@marcoschulte/vue3-progress";
 
 import "@marcoschulte/vue3-progress/dist/index.css"
+import "leaflet/dist/leaflet.css";
 import "./theme/base.css";
 
 const app = createApp(App)

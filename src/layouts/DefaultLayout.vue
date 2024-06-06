@@ -1,13 +1,24 @@
 <script lang="ts" setup>
 import { Preferences } from "@capacitor/preferences";
 import { toast } from "vue-sonner";
-
+import { useOriginCoords } from "@/stores/origin";
 import { onMounted } from "vue";
 import { useAuth } from "@/stores/auth";
 import { useMaps } from "@/stores/maps";
+import { PageTransition } from "vue3-page-transition";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { AlignJustify } from "lucide-vue-next";
+import { User } from "lucide-vue-next";
+import { App } from "@capacitor/app";
 
 const authStore = useAuth();
 const mapsStore = useMaps();
+const originStore = useOriginCoords();
 
 const check = async () => {
   try {
@@ -28,7 +39,7 @@ const check = async () => {
 
 const loadMap = async () => {
   try {
-    await Promise.allSettled([mapsStore.loadMap("map")]);
+    await mapsStore.loadMap("map");
   } catch (error: any) {
     console.log(error);
   }
@@ -36,21 +47,10 @@ const loadMap = async () => {
 
 onMounted(async () => {
   try {
-    setTimeout(async () => {
-      const [checking, loadingMap] = await Promise.allSettled([
-        check(),
-        loadMap(),
-      ]);
-
-      if (
-        checking.status === "fulfilled" &&
-        loadingMap.status === "fulfilled"
-      ) {
-        return;
-      }
-
-      toast("Nimadir xato ketdi, dasturni boshqatdan ishga tushiring");
-    }, 100);
+    await check();
+    await originStore.getCoords();
+    await originStore.watchCoords();
+    await loadMap();
   } catch (error: any) {
     toast(error);
   }
@@ -59,14 +59,43 @@ onMounted(async () => {
 
 <template>
   <div class="default-layout">
-    <div class="h-screen" id="map"></div>
+    <nav class="navbar suit-theme-reverse mx-auto p-2 flex items-center">
+      <DropdownMenu class="suit-theme-reverse">
+        <DropdownMenuTrigger>
+          <button
+            class="bg-primary-foreground p-2 flex items-center text-primary rounded-full"
+          >
+            <AlignJustify :size="24" /></button
+        ></DropdownMenuTrigger>
+        <DropdownMenuContent
+          class="font-manrope font-semibold space-y-2 border-none"
+        >
+          <DropdownMenuItem class="text-lg">
+            <User class="mr-2" /> Akkauntim
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <div class="right text-lg ml-2">Bugun: 233,000 so'm</div>
+    </nav>
+    <div class="h-screen z-[49]" id="map"></div>
     <router-view
-      class="fixed bottom-0 h-auto suit-theme-reverse w-full"
-    ></router-view>
+      class="h-auto fixed bottom-0 w-full z-[49]"
+      v-slot="{ Component }"
+    >
+      <PageTransition name="fade-in-up" appear>
+        <component :is="Component" />
+      </PageTransition>
+    </router-view>
   </div>
 </template>
 
-<style scoped>
+<style>
+.custom-style {
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 8px -2px rgba(0, 0, 0, 0.2);
+}
+
 img[alt="Google"] {
   display: none;
 }
