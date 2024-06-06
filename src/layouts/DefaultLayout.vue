@@ -14,11 +14,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AlignJustify } from "lucide-vue-next";
 import { User } from "lucide-vue-next";
-import { App } from "@capacitor/app";
+import { Button } from "@/components/ui/button";
+import { useAccount } from "@/stores/account";
+import { storeToRefs } from "pinia";
 
 const authStore = useAuth();
 const mapsStore = useMaps();
 const originStore = useOriginCoords();
+const accountStore = useAccount();
+
+const { isActive } = storeToRefs(accountStore);
 
 const check = async () => {
   try {
@@ -59,7 +64,9 @@ onMounted(async () => {
 
 <template>
   <div class="default-layout">
-    <nav class="navbar suit-theme-reverse mx-auto p-2 flex items-center">
+    <nav
+      class="navbar suit-theme-reverse mx-auto p-2 flex items-center w-full fixed top-0 z-50"
+    >
       <DropdownMenu class="suit-theme-reverse">
         <DropdownMenuTrigger>
           <button
@@ -79,6 +86,7 @@ onMounted(async () => {
       <div class="right text-lg ml-2">Bugun: 233,000 so'm</div>
     </nav>
     <div class="h-screen z-[49]" id="map"></div>
+
     <router-view
       class="h-auto fixed bottom-0 w-full z-[49]"
       v-slot="{ Component }"

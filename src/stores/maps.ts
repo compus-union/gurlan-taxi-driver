@@ -65,16 +65,16 @@ export const useMaps = defineStore("maps-store", () => {
       markers.value.push(navigatorMarker);
       console.log(markers.value);
 
-      watch(
-        () => heading.value,
-        (newVal, oldVal) => {
-          if (navigatorMarker) {
-            alert(newVal);
-            //@ts-ignore
-            navigatorMarker.setRotationAngle(newVal);
-          }
-        }
-      );
+      // watch(
+      //   () => heading.value,
+      //   (newVal, oldVal) => {
+      //     if (navigatorMarker) {
+      //       alert(newVal);
+      //       //@ts-ignore
+      //       navigatorMarker.setRotationAngle(newVal);
+      //     }
+      //   }
+      // );
     } catch (error: any) {
       alert(error);
       console.log("Error loading navigator marker: ", error);
