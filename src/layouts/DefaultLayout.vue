@@ -1,25 +1,24 @@
 <script lang="ts" setup>
 import { Preferences } from "@capacitor/preferences";
 import { toast } from "vue-sonner";
-
+import { useOriginCoords } from "@/stores/origin";
 import { onMounted } from "vue";
 import { useAuth } from "@/stores/auth";
 import { useMaps } from "@/stores/maps";
-import { useOriginCoords } from "@/stores/origin";
 import { PageTransition } from "vue3-page-transition";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AlignJustify } from "lucide-vue-next";
 import { User } from "lucide-vue-next";
+import { App } from "@capacitor/app";
 
 const authStore = useAuth();
 const mapsStore = useMaps();
-const originCoords = useOriginCoords();
+const originStore = useOriginCoords();
 
 const check = async () => {
   try {
@@ -46,20 +45,11 @@ const loadMap = async () => {
   }
 };
 
-const getCoords = async () => {
-  try {
-    await originCoords.getCoords();
-    return;
-  } catch (error: any) {
-    console.log(error);
-    toast(error);
-  }
-};
-
 onMounted(async () => {
   try {
     await check();
-    await getCoords();
+    await originStore.getCoords();
+    await originStore.watchCoords();
     await loadMap();
   } catch (error: any) {
     toast(error);

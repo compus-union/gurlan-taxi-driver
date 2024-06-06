@@ -1,10 +1,9 @@
 import { defineStore, storeToRefs } from "pinia";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useOriginCoords } from "@/stores/origin";
 import L from "leaflet";
 import { toast } from "vue-sonner";
 import NavigatorMarkerIco from "@/resources/navigator-marker.svg";
-import RealLocationPointIco from "@/resources/real-location-point.svg";
 import "leaflet-rotatedmarker";
 
 export interface CustomMarker extends L.Marker {
@@ -15,11 +14,11 @@ export interface CustomMarker extends L.Marker {
 // Define a store for maps
 export const useMaps = defineStore("maps-store", () => {
   const originStore = useOriginCoords();
-  const { lat: originLat, lng: originLng } = storeToRefs(originStore);
+  const { lat: originLat, lng: originLng, heading } = storeToRefs(originStore);
   const sharedMap = ref<L.Map>();
   const defaultZoom = ref(16);
   const mapLoaded = ref(false);
-  const markers = ref<CustomMarker[]>();
+  const markers = ref<CustomMarker[]>([]);
 
   async function loadMap(id: string) {
     try {
@@ -57,21 +56,30 @@ export const useMaps = defineStore("maps-store", () => {
 
       const navigatorMarker = L.marker([originLat.value, originLng.value], {
         icon: navigatorMarkerIcon,
+        // @ts-ignore
         rotationAngle: 0,
         rotationOrigin: "center center",
       }).addTo(sharedMap.value as L.Map | L.LayerGroup<any>) as CustomMarker;
 
       navigatorMarker._custom_id === "navigator-marker";
-      markers.value?.push(navigatorMarker);
+      markers.value.push(navigatorMarker);
+      console.log(markers.value);
 
-      setTimeout(() => {
-        navigatorMarker.setRotationAngle(90);
-      }, 3000);
+      watch(
+        () => heading.value,
+        (newVal, oldVal) => {
+          if (navigatorMarker) {
+            alert(newVal);
+            //@ts-ignore
+            navigatorMarker.setRotationAngle(newVal);
+          }
+        }
+      );
     } catch (error: any) {
       alert(error);
       console.log("Error loading navigator marker: ", error);
     }
   }
 
-  return { loadMap };
+  return { loadMap, markers };
 });

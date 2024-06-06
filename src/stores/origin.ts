@@ -3,10 +3,13 @@ import { computed, ref } from "vue";
 import { Geolocation } from "@capacitor/geolocation";
 import router from "@/router";
 import { App } from "@capacitor/app";
+import { toast } from "vue-sonner";
 
 export const useOriginCoords = defineStore("origin-coords-store", () => {
   const lat = ref<number>(0);
   const lng = ref<number>(0);
+  const heading = ref();
+  const watcherId = ref();
 
   const watchingCoords = ref<boolean>(true);
 
@@ -58,18 +61,23 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
       return { coords: results.coords };
     } catch (error: any) {
       console.log(error);
-      alert(error)
+      toast(error);
     }
   }
 
   async function watchCoords(): Promise<void> {
     try {
       if (watchingCoords.value) {
-        await Geolocation.watchPosition({}, (results) => {
-          lat.value = results?.coords.latitude as number;
-          lng.value = results?.coords.longitude as number;
-        });
-        console.log("watch coords enabled");
+        const watchId = await Geolocation.watchPosition(
+          { enableHighAccuracy: true },
+          async (results) => {
+            lat.value = results?.coords.latitude as number;
+            lng.value = results?.coords.longitude as number;
+            heading.value = results?.coords.heading;
+          }
+        );
+
+        watcherId.value = watchId;
 
         return;
       }
@@ -77,6 +85,16 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
       console.log("watch coords disabled");
     } catch (error) {
       await router.push("/no-gps");
+    }
+  }
+
+  async function removeWatchCoords() {
+    try {
+      await Geolocation.clearWatch({ id: watcherId.value });
+      return
+    } catch (error: any) {
+      console.log(error);
+      toast(error)
     }
   }
 
@@ -97,9 +115,11 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
     coords,
     getCoords,
     watchCoords,
+    removeWatchCoords,
     changeCoords,
     getCoordsWithNavigator,
     lat,
     lng,
+    heading,
   };
 });
