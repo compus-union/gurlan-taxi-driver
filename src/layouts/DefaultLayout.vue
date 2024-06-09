@@ -17,6 +17,9 @@ import { User } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/stores/account";
 import { storeToRefs } from "pinia";
+import { useSocket } from "@/composables/useSocket";
+
+const { state, connectSocket, disconnectSocket } = useSocket();
 
 const authStore = useAuth();
 const mapsStore = useMaps();
@@ -56,10 +59,17 @@ onMounted(async () => {
     await originStore.getCoords();
     await originStore.watchCoords();
     await loadMap();
+    await connectSocket();
   } catch (error: any) {
     toast(error);
   }
 });
+
+onMounted(async() => {
+  window.addEventListener("beforeunload", async (e) => {
+    await disconnectSocket()
+  })
+})
 </script>
 
 <template>
