@@ -59,17 +59,17 @@ onMounted(async () => {
     await originStore.getCoords();
     await originStore.watchCoords();
     await loadMap();
-    await connectSocket();
+    await connectSocket({ loading: true });
   } catch (error: any) {
     toast(error);
   }
 });
 
-onMounted(async() => {
+onMounted(async () => {
   window.addEventListener("beforeunload", async (e) => {
-    await disconnectSocket()
-  })
-})
+    await disconnectSocket();
+  });
+});
 </script>
 
 <template>
