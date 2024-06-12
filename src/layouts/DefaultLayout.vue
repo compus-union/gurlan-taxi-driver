@@ -17,7 +17,7 @@ import { User } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/stores/account";
 import { storeToRefs } from "pinia";
-import { useSocket } from "@/composables/useSocket";
+import { useSocket } from "@/stores/socket";
 
 const { state, connectSocket, disconnectSocket } = useSocket();
 

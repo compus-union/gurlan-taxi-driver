@@ -2,8 +2,9 @@ import { ref } from "vue";
 import { io, Socket } from "socket.io-client";
 import config from "@/config";
 import { Preferences } from "@capacitor/preferences";
+import { defineStore } from "pinia";
 
-export function useSocket() {
+export const useSocket = defineStore("socket-store", () => {
   const state = ref({
     connected: false,
     socketId: "",
@@ -47,4 +48,4 @@ export function useSocket() {
     disconnectSocket,
     socket,
   };
-}
+});
