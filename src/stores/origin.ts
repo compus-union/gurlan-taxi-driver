@@ -61,7 +61,6 @@ export const useOriginCoords = defineStore("origin-coords-store", () => {
       return { coords: results.coords };
     } catch (error: any) {
       console.log(error);
-      toast(error);
     }
   }
 

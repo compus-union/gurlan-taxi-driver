@@ -1,9 +1,10 @@
-import { ref } from "vue";
+import { ref, onUnmounted } from "vue";
 import { io, Socket } from "socket.io-client";
 import config from "@/config";
 import { Preferences } from "@capacitor/preferences";
 import { defineStore } from "pinia";
 import { loadingController } from "@ionic/core";
+import { toast } from "vue-sonner";
 
 export const useSocket = defineStore("socket-store", () => {
   const state = ref({
@@ -16,9 +17,18 @@ export const useSocket = defineStore("socket-store", () => {
   });
 
   const initConnection = async (socketId: string) => {
-    const { value } = await Preferences.get({ key: "driverOneId" });
-    const user = { socketId, oneId: value, type: "driver" };
-    socket.emit("connection:init", { user });
+    try {
+      const { value } = await Preferences.get({ key: "driverOneId" });
+      if (value) {
+        const user = { socketId, oneId: value, type: "driver" };
+        socket.emit("connection:init", { user });
+      } else {
+        throw new Error("Driver ID not found");
+      }
+    } catch (error) {
+      console.error("Error initializing connection:", error);
+      toast("Connection initialization failed. Please try again.");
+    }
   };
 
   socket.on("connect", async () => {
@@ -27,9 +37,15 @@ export const useSocket = defineStore("socket-store", () => {
     state.value.connected = true;
   });
 
+  socket.on("disconnect", () => {
+    state.value.connected = false;
+    state.value.socketId = "";
+    console.log("Disconnected from server");
+  });
+
   const connectSocket = async (payload: { loading?: boolean }) => {
     const loading = await loadingController.create({
-      message: "Tizimga ulanilmoqda...",
+      message: "Faollik ishga tushmoqda...",
     });
     try {
       if (!state.value.connected) {
@@ -37,24 +53,70 @@ export const useSocket = defineStore("socket-store", () => {
           await loading.present();
         }
         socket.connect();
-        state.value.connected = true;
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Error connecting socket:", error);
+      toast(
+        error.message ||
+          error.response?.data?.msg ||
+          "Faollikni ishga tushirishda xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring"
+      );
     } finally {
       if (payload.loading) {
-        loading.dismiss();
+        await loading.dismiss();
       }
     }
   };
 
-  const disconnectSocket = async () => {
-    if (state.value.connected) {
-      const { value } = await Preferences.get({ key: "driverOneId" });
-      socket.emit("connection:disconnect", { user: { oneId: value } });
-      state.value.connected = false;
-      state.value.socketId = "";
+  const disconnectSocket = async (payload: { loading?: boolean }) => {
+    const loading = await loadingController.create({
+      message: "Faollik uzilmoqda...",
+    });
+    try {
+      if (state.value.connected) {
+        if (payload.loading) {
+          await loading.present();
+        }
+        const { value } = await Preferences.get({ key: "driverOneId" });
+        if (value) {
+          socket.emit("connection:disconnect", { user: { oneId: value } });
+        } else {
+          throw new Error("Driver ID not found");
+        }
+        socket.disconnect();
+        state.value.connected = false;
+        state.value.socketId = "";
+      }
+    } catch (error: any) {
+      console.error("Error disconnecting socket:", error);
+      toast(
+        error.message ||
+          error.response?.data?.msg ||
+          "Faollikni o'chirishda xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring"
+      );
+    } finally {
+      if (payload.loading) {
+        await loading.dismiss();
+      }
     }
   };
+
+  socket.on("message:disconnection-confirmed", (data) => {
+    alert(data.msg);
+    toast(data.msg);
+  });
+
+  socket.on("message:connection-confirmed", (data) => {
+    alert(data.msg);
+    toast(data.msg);
+  });
+
+  onUnmounted(() => {
+    socket.off("connect");
+    socket.off("disconnect");
+    socket.off("message:disconnection-confirmed");
+    socket.off("message:connection-confirmed");
+  });
 
   return {
     state,
