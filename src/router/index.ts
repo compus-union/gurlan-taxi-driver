@@ -94,6 +94,9 @@ const routes: Array<RouteRecordRaw> = [
 
           return next();
         },
+        meta: {
+          layout: "auth-layout",
+        },
       },
       {
         path: "login",
@@ -128,6 +131,9 @@ const routes: Array<RouteRecordRaw> = [
           }
           next();
         },
+        meta: {
+          layout: "auth-layout",
+        },
       },
       {
         path: "invalidation",
@@ -161,6 +167,9 @@ const routes: Array<RouteRecordRaw> = [
             return next("/auth/banned");
           }
           next();
+        },
+        meta: {
+          layout: "auth-layout",
         },
       },
       {
@@ -201,6 +210,9 @@ const routes: Array<RouteRecordRaw> = [
 
           next();
         },
+        meta: {
+          layout: "auth-layout",
+        },
       },
       {
         path: "banned",
@@ -235,6 +247,9 @@ const routes: Array<RouteRecordRaw> = [
           }
           next();
         },
+        meta: {
+          layout: "auth-layout"
+        }
       },
       {
         path: "emergency-login",
@@ -270,6 +285,9 @@ const routes: Array<RouteRecordRaw> = [
 
           return next();
         },
+        meta: {
+          layout: "auth-layout"
+        }
       },
     ],
   },

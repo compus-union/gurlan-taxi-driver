@@ -13,6 +13,7 @@ export const useSocket = defineStore("socket-store", () => {
   const state = ref({
     connected: false,
     socketId: "",
+    disconnected: false,
   });
 
   const socket: Socket = io(config.SERVER_PUBLIC_URL, {
@@ -56,6 +57,11 @@ export const useSocket = defineStore("socket-store", () => {
           await loading.present();
         }
         socket.connect();
+      } else if (state.value.connected) {
+        if (payload.loading) {
+          await loading.dismiss();
+          return
+        }
       }
     } catch (error: any) {
       console.error("Error connecting socket:", error);
@@ -83,8 +89,13 @@ export const useSocket = defineStore("socket-store", () => {
         const { value } = await Preferences.get({ key: "driverOneId" });
         if (value) {
           socket.emit("connection:disconnect", { user: { oneId: value } });
+          state.value.disconnected = true;
         } else {
           throw new Error("Driver ID not found");
+        }
+      } else {
+        if (payload.loading) {
+          await loading.dismiss()
         }
       }
     } catch (error: any) {

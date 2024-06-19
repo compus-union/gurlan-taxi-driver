@@ -4,12 +4,16 @@ import { Power } from "lucide-vue-next";
 import { useAccount } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { useSocket } from "@/stores/socket";
+import router from "@/router";
 
 const socketStore = useSocket();
 const accountStore = useAccount();
 
-const {} = storeToRefs(socketStore);
 const { status } = storeToRefs(accountStore);
+
+const pushToOptions = () => {
+  router.push("/options")
+}
 </script>
 
 <template>
@@ -23,6 +27,10 @@ const { status } = storeToRefs(accountStore);
         @click="socketStore.connectSocket({ loading: true })"
         class="suit-theme w-full"
         ><Power class="mr-2" /> Faollikni yoqish</Button
+      ><Button
+        @click="pushToOptions"
+        class="suit-theme w-full"
+        >Go to options</Button
       >
     </div>
   </div>

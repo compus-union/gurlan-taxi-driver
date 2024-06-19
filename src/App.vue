@@ -1,15 +1,63 @@
 <script setup lang="ts">
 import { onMounted, watch } from "vue";
-import { Toaster } from "vue-sonner";
+import { Toaster, toast } from "vue-sonner";
 import { PageTransition } from "vue3-page-transition";
-import { useAccount } from "./stores/account";
 import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
+import { useSocket } from "./stores/socket";
+import { Preferences } from "@capacitor/preferences";
+import { useAuth } from "./stores/auth";
 
-const router = useRouter();
-const accountStore = useAccount();
+const route = useRoute();
+const socketStore = useSocket();
+const authStore = useAuth();
 
-const { status } = storeToRefs(accountStore);
+const { state } = storeToRefs(socketStore);
+
+const check = async () => {
+  const { value: oneId } = await Preferences.get({ key: "driverOneId" });
+  const { value: token } = await Preferences.get({ key: "auth_token" });
+
+  await authStore.checkIfLoggedIn({
+    oneId: oneId as string,
+    token: token as string,
+  });
+
+  return;
+};
+onMounted(async () => {
+  try {
+    await check();
+  } catch (error: any) {
+    toast(
+      error ||
+        error.response.data.msg ||
+        error.message ||
+        "Ma'lumotlaringizni tekshirishda xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring"
+    );
+  }
+});
+
+onMounted(async () => {
+  try {
+    if (route.meta?.layout === "auth-layout") return;
+    if (!state.value.connected) {
+      await socketStore.connectSocket({ loading: true });
+    }
+    window.addEventListener("beforeunload", async (e) => {
+      if (state.value.connected) {
+        await socketStore.disconnectSocket({ loading: false });
+      }
+    });
+  } catch (error: any) {
+    toast(
+      error ||
+        error.response.data.msg ||
+        error.message ||
+        "Faollikni yoqishda xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring"
+    );
+  }
+});
 </script>
 
 <template>

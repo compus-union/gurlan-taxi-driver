@@ -18,30 +18,16 @@ import { Button } from "@/components/ui/button";
 import { useAccount } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { useSocket } from "@/stores/socket";
+import router from "@/router";
 
-const { state, connectSocket, disconnectSocket } = useSocket();
+const socketStore = useSocket();
+const { connectSocket, disconnectSocket } = useSocket();
+const { state } = storeToRefs(socketStore);
 
 const authStore = useAuth();
 const mapsStore = useMaps();
 const originStore = useOriginCoords();
 const accountStore = useAccount();
-
-const check = async () => {
-  try {
-    const { value: oneId } = await Preferences.get({ key: "driverOneId" });
-    const { value: token } = await Preferences.get({ key: "auth_token" });
-
-    await authStore.checkIfLoggedIn({
-      oneId: oneId as string,
-      token: token as string,
-    });
-
-    return;
-  } catch (error: any) {
-    console.log(error);
-    toast(error.message || error.response.data.msg || error);
-  }
-};
 
 const loadMap = async () => {
   try {
@@ -53,21 +39,17 @@ const loadMap = async () => {
 
 onMounted(async () => {
   try {
-    await check();
     await originStore.getCoords();
     await originStore.watchCoords();
     await loadMap();
-    await connectSocket({ loading: true });
   } catch (error: any) {
     toast(error);
   }
 });
 
-onMounted(async () => {
-  window.addEventListener("beforeunload", async (e) => {
-    await disconnectSocket({ loading: false });
-  });
-});
+const pushToOptions = () => {
+  router.push("/options");
+};
 </script>
 
 <template>
@@ -83,7 +65,7 @@ onMounted(async () => {
             <AlignJustify :size="24" /></button
         ></DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem>
+          <DropdownMenuItem @click="pushToOptions">
             <User class="mr-2" /> Akkauntim
           </DropdownMenuItem>
         </DropdownMenuContent>

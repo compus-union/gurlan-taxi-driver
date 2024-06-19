@@ -50,8 +50,8 @@ const disconnectSocket = async () => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel class="suit-theme py-6">Bekor qilish</AlertDialogCancel>
-          <AlertDialogAction @click="disconnectSocket" class="py-6"
+          <AlertDialogCancel class="suit-theme-reverse border py-6">Bekor qilish</AlertDialogCancel>
+          <AlertDialogAction @click="disconnectSocket" class="py-6 suit-theme"
             >Ha</AlertDialogAction
           >
         </AlertDialogFooter>
