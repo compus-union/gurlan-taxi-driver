@@ -5,8 +5,11 @@ import { Preferences } from "@capacitor/preferences";
 import { defineStore } from "pinia";
 import { loadingController } from "@ionic/core";
 import { toast } from "vue-sonner";
+import { useAccount } from "./account";
+import router from "@/router";
 
 export const useSocket = defineStore("socket-store", () => {
+  const accountStore = useAccount();
   const state = ref({
     connected: false,
     socketId: "",
@@ -83,9 +86,6 @@ export const useSocket = defineStore("socket-store", () => {
         } else {
           throw new Error("Driver ID not found");
         }
-        socket.disconnect();
-        state.value.connected = false;
-        state.value.socketId = "";
       }
     } catch (error: any) {
       console.error("Error disconnecting socket:", error);
@@ -101,13 +101,22 @@ export const useSocket = defineStore("socket-store", () => {
     }
   };
 
-  socket.on("message:disconnection-confirmed", (data) => {
-    alert(data.msg);
+  socket.on("message:disconnection-confirmed", async (data) => {
+    await accountStore.changeStatus(data.status);
+    alert(data.status);
+    await router.push("/home/deactivated");
     toast(data.msg);
   });
 
-  socket.on("message:connection-confirmed", (data) => {
-    alert(data.msg);
+  socket.on("message:connection-confirmed", async (data) => {
+    if (
+      !router.currentRoute.value.fullPath.includes("/home") ||
+      router.currentRoute.value.fullPath === "/home/deactivated"
+    ) {
+      await router.push("/home");
+    }
+    await accountStore.changeStatus(data.status);
+    alert(data.status);
     toast(data.msg);
   });
 

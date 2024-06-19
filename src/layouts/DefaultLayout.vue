@@ -26,8 +26,6 @@ const mapsStore = useMaps();
 const originStore = useOriginCoords();
 const accountStore = useAccount();
 
-const { isActive } = storeToRefs(accountStore);
-
 const check = async () => {
   try {
     const { value: oneId } = await Preferences.get({ key: "driverOneId" });
@@ -67,7 +65,7 @@ onMounted(async () => {
 
 onMounted(async () => {
   window.addEventListener("beforeunload", async (e) => {
-    await disconnectSocket();
+    await disconnectSocket({ loading: false });
   });
 });
 </script>

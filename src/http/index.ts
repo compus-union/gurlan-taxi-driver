@@ -2,29 +2,33 @@ import axios from "axios";
 import config from "@/config";
 import { useLoading } from "@/stores/loading";
 
-const loadingStore = useLoading();
 
-export const authInstance = axios.create({
+
+export const driverInstance = axios.create({
   baseURL: config.SERVER_URL + "/driver",
 });
 
-authInstance.interceptors.request.use(
+driverInstance.interceptors.request.use(
   async function (config) {
+    const loadingStore = useLoading();
     await loadingStore.setLoading(true);
     return config;
   },
   async function (error) {
+    const loadingStore = useLoading();
     await loadingStore.setLoading(false);
     return Promise.reject(error);
   }
 );
 
-authInstance.interceptors.response.use(
+driverInstance.interceptors.response.use(
   async function (config) {
+    const loadingStore = useLoading();
     await loadingStore.setLoading(false);
     return config;
   },
   async function (error) {
+    const loadingStore = useLoading();
     await loadingStore.setLoading(false);
     return Promise.reject(error);
   }

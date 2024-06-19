@@ -1,6 +1,15 @@
 <script setup lang="ts">
+import { onMounted, watch } from "vue";
 import { Toaster } from "vue-sonner";
 import { PageTransition } from "vue3-page-transition";
+import { useAccount } from "./stores/account";
+import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const accountStore = useAccount();
+
+const { status } = storeToRefs(accountStore);
 </script>
 
 <template>

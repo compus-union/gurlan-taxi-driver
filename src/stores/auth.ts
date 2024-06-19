@@ -6,7 +6,7 @@ import {
   StatusLicenseDocuments,
   DriverValidation,
 } from "@/constants";
-import { authInstance } from "@/http";
+import { driverInstance } from "@/http";
 import { Preferences } from "@capacitor/preferences";
 import { useLoading } from "./loading";
 import { useRouter } from "vue-router";
@@ -111,7 +111,7 @@ export const useAuth = defineStore("auth-store", () => {
       await loadingStore.setLoading(true);
       plainPass.value = driver.value.password;
 
-      const sendingDriverInfo = await authInstance.post("/register", {
+      const sendingDriverInfo = await driverInstance.post("/register", {
         driver: payload.driver,
         car: payload.car,
       });
@@ -201,7 +201,7 @@ export const useAuth = defineStore("auth-store", () => {
 
     try {
       await loading.present();
-      const res = await authInstance.get(`/check-validation/${payload.oneId}`, {
+      const res = await driverInstance.get(`/check-validation/${payload.oneId}`, {
         headers: { Authorization: `Bearer ${payload.token}` },
       });
       if (res.status >= 400) {
@@ -369,7 +369,7 @@ export const useAuth = defineStore("auth-store", () => {
     });
     await loading.present();
     try {
-      const res = await authInstance.get(`/check-logged-in/${payload.oneId}`, {
+      const res = await driverInstance.get(`/check-logged-in/${payload.oneId}`, {
         headers: { Authorization: `Bearer ${payload.token}` },
       });
 
@@ -481,7 +481,7 @@ export const useAuth = defineStore("auth-store", () => {
       await loadingStore.setLoading(true);
       const { value: token } = await Preferences.get({ key: "auth_token" });
 
-      const res = await authInstance.post(
+      const res = await driverInstance.post(
         type === "emergency" ? "/emergency-login" : "/login",
         { ...payload, emergencyLogin: type === "emergency" ? true : false },
         {
@@ -533,7 +533,7 @@ export const useAuth = defineStore("auth-store", () => {
 
     try {
       await loading.present();
-      const response = await authInstance.delete(`/restart/${payload.oneId}`, {
+      const response = await driverInstance.delete(`/restart/${payload.oneId}`, {
         headers: { Authorization: `Bearer ${payload.token}` },
       });
 

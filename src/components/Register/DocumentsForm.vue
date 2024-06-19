@@ -3,7 +3,7 @@ import { useAuth } from "@/stores/auth";
 import { computed, defineAsyncComponent, ref } from "vue";
 import { useLoading } from "@/stores/loading";
 import router from "@/router";
-import { authInstance } from "@/http";
+import { driverInstance } from "@/http";
 import { ResponseStatus } from "@/constants";
 import { loadingController } from "@ionic/vue";
 import { toast } from "vue-sonner";
@@ -97,7 +97,7 @@ const action = async () => {
     }
 
     if (result.status === ResponseStatus.DRIVER_REGISTRATION_DONE) {
-      const sendingPictures = await authInstance.post(
+      const sendingPictures = await driverInstance.post(
         `/send-images/${result.oneId}/${authStore.plainPass}`,
         formData,
         {
