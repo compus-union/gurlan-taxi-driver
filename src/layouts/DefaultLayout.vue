@@ -75,17 +75,15 @@ onMounted(async () => {
     <nav
       class="navbar suit-theme-reverse mx-auto p-2 flex items-center w-full fixed top-0 z-50"
     >
-      <DropdownMenu class="suit-theme-reverse">
+      <DropdownMenu>
         <DropdownMenuTrigger>
           <button
             class="bg-primary-foreground p-2 flex items-center text-primary rounded-full"
           >
             <AlignJustify :size="24" /></button
         ></DropdownMenuTrigger>
-        <DropdownMenuContent
-          class="font-manrope font-semibold space-y-2 border-none"
-        >
-          <DropdownMenuItem class="text-lg">
+        <DropdownMenuContent>
+          <DropdownMenuItem>
             <User class="mr-2" /> Akkauntim
           </DropdownMenuItem>
         </DropdownMenuContent>
