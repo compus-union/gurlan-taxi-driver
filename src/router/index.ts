@@ -326,6 +326,13 @@ const routes: Array<RouteRecordRaw> = [
 
       return next();
     },
+    children: [
+      {
+        path: "profile",
+        name: "options-layout-profile-page",
+        component: () => import("@/views/Options/ProfilePage.vue")
+      }
+    ]
   },
 ];
 

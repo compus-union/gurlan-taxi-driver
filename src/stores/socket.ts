@@ -5,11 +5,14 @@ import { Preferences } from "@capacitor/preferences";
 import { defineStore } from "pinia";
 import { loadingController } from "@ionic/core";
 import { toast } from "vue-sonner";
-import { useAccount } from "./account";
+import { useProfile } from "./profile";
 import router from "@/router";
+import { useRide } from "./ride";
 
 export const useSocket = defineStore("socket-store", () => {
-  const accountStore = useAccount();
+  const profileStore = useProfile();
+  const rideStore = useRide();
+
   const state = ref({
     connected: false,
     socketId: "",
@@ -47,6 +50,20 @@ export const useSocket = defineStore("socket-store", () => {
     console.log("Disconnected from server");
   });
 
+  socket.on("connection:error", async (data) => {
+    if (data.status === "bad") {
+      toast(data.msg);
+      state.value.connected = false;
+      state.value.socketId = "";
+      socket.disconnect()
+      await router.push("/home/deactivated");
+    }
+  });
+
+  socket.on("info:online-drivers", async (data) => {
+    await rideStore.changeOnlineDriversCount(data.mapCount);
+  });
+
   const connectSocket = async (payload: { loading?: boolean }) => {
     const loading = await loadingController.create({
       message: "Faollik ishga tushmoqda...",
@@ -60,7 +77,7 @@ export const useSocket = defineStore("socket-store", () => {
       } else if (state.value.connected) {
         if (payload.loading) {
           await loading.dismiss();
-          return
+          return;
         }
       }
     } catch (error: any) {
@@ -95,7 +112,7 @@ export const useSocket = defineStore("socket-store", () => {
         }
       } else {
         if (payload.loading) {
-          await loading.dismiss()
+          await loading.dismiss();
         }
       }
     } catch (error: any) {
@@ -113,22 +130,21 @@ export const useSocket = defineStore("socket-store", () => {
   };
 
   socket.on("message:disconnection-confirmed", async (data) => {
-    await accountStore.changeStatus(data.status);
-    alert(data.status);
+    await profileStore.changeStatus(data.status);
     await router.push("/home/deactivated");
     toast(data.msg);
   });
 
   socket.on("message:connection-confirmed", async (data) => {
+    toast(data.msg);
+
     if (
       !router.currentRoute.value.fullPath.includes("/home") ||
       router.currentRoute.value.fullPath === "/home/deactivated"
     ) {
       await router.push("/home");
     }
-    await accountStore.changeStatus(data.status);
-    alert(data.status);
-    toast(data.msg);
+    await profileStore.changeStatus(data.status);
   });
 
   onUnmounted(() => {

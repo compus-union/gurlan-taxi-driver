@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { Button } from "@/components/ui/button";
 import { List, PowerOff } from "lucide-vue-next";
-import { useAccount } from "@/stores/account";
 import { useRouter } from "vue-router";
 import { useSocket } from "@/stores/socket";
 import { storeToRefs } from "pinia";
@@ -16,17 +15,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useRide } from "@/stores/ride";
 
 const router = useRouter();
 const socketStore = useSocket();
+const rideStore = useRide();
 
-const accountStore = useAccount();
-
-const { status } = storeToRefs(accountStore);
-
-const pushToOptions = () => {
-  router.push("/options");
-};
+const { onlineDriversCount } = storeToRefs(rideStore);
 
 const disconnectSocket = async () => {
   await socketStore.disconnectSocket({ loading: true });
@@ -50,7 +45,9 @@ const disconnectSocket = async () => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel class="suit-theme-reverse border py-6">Bekor qilish</AlertDialogCancel>
+          <AlertDialogCancel class="suit-theme-reverse border py-6"
+            >Bekor qilish</AlertDialogCancel
+          >
           <AlertDialogAction @click="disconnectSocket" class="py-6 suit-theme"
             >Ha</AlertDialogAction
           >
@@ -60,9 +57,14 @@ const disconnectSocket = async () => {
 
     <div class="main-content h-auto suit-theme-reverse w-full custom-style p-6">
       <h1 class="text-xl flex items-center mb-4">
-        <span class="online w-3 h-3 bg-green-400 rounded-full mr-2"></span> 26
-        haydovchilar
-        {{ status }}
+        <span class="online w-3 h-3 bg-green-400 rounded-full mr-2"></span>
+        {{
+          onlineDriversCount === 0
+            ? "Hozircha haydovchilar yo'q"
+            : onlineDriversCount === 1
+            ? `${onlineDriversCount} haydovchi`
+            : `${onlineDriversCount} haydovchilar`
+        }}
       </h1>
       <Button class="suit-theme w-full"
         ><List class="mr-2" /> Buyurtmalar</Button

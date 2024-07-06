@@ -1,9 +1,7 @@
 <script lang="ts" setup>
-import { Preferences } from "@capacitor/preferences";
 import { toast } from "vue-sonner";
 import { useOriginCoords } from "@/stores/origin";
 import { onMounted } from "vue";
-import { useAuth } from "@/stores/auth";
 import { useMaps } from "@/stores/maps";
 import { PageTransition } from "vue3-page-transition";
 import {
@@ -15,19 +13,12 @@ import {
 import { AlignJustify } from "lucide-vue-next";
 import { User } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
-import { useAccount } from "@/stores/account";
-import { storeToRefs } from "pinia";
-import { useSocket } from "@/stores/socket";
 import router from "@/router";
+import { useProfile } from "@/stores/profile";
 
-const socketStore = useSocket();
-const { connectSocket, disconnectSocket } = useSocket();
-const { state } = storeToRefs(socketStore);
-
-const authStore = useAuth();
+const profileStore = useProfile()
 const mapsStore = useMaps();
 const originStore = useOriginCoords();
-const accountStore = useAccount();
 
 const loadMap = async () => {
   try {
@@ -42,13 +33,18 @@ onMounted(async () => {
     await originStore.getCoords();
     await originStore.watchCoords();
     await loadMap();
+    await profileStore.getProfile({ loading: true });
   } catch (error: any) {
-    toast(error);
+    toast(
+      error.message ||
+        error.response.data.msg ||
+        "Ma'lumotlarni yuklashda xatolik yuzaga keldi, dasturni boshqatdan ishga tushiring"
+    );
   }
 });
 
-const pushToOptions = () => {
-  router.push("/options");
+const pushToOptions = async () => {
+  await router.push("/options/profile");
 };
 </script>
 
