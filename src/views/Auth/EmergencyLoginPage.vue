@@ -182,7 +182,7 @@ const action = async () => {
           />
         </div>
         <div class="form-group">
-          <Label for="oneId">Favqulodda kod</Label>
+          <Label for="emergencyPassword">Favqulodda kod</Label>
           <Input
             v-model:model-value.trim.lazy="driver.emergencyPassword"
             id="emergencyPassword"
