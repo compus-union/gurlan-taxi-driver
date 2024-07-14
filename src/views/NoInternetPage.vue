@@ -5,6 +5,7 @@ import { Network } from '@capacitor/network'
 import { useRouterHistory } from '@/composables/useRouterHistory'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
+import CatSad from '@/components/custom-illustrations/CatSad.vue'
 
 const router = useRouter()
 const { hasPreviousPage } = useRouterHistory()
@@ -47,6 +48,7 @@ const checkNetworkStatus = async () => {
 
 <template>
 	<div class="no-internet flex flex-col items-center justify-center">
+		<CatSad class="w-full my-6" />
 		<h1 class="text-center font-bold text-4xl">Internet Aloqasi mavjud emas</h1>
 		<Button @click="checkNetworkStatus" :disabled="loading">Tekshirish</Button>
 	</div>
