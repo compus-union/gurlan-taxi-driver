@@ -1,12 +1,15 @@
 <script lang="ts" setup>
 import { Button } from "@/components/ui/button";
-import { Power, List } from "lucide-vue-next";
-import { useAccount } from "@/stores/account";
-import { storeToRefs } from "pinia";
+import { Power } from "lucide-vue-next";
+import { useSocket } from "@/stores/socket";
+import { useRouter } from "vue-router";
 
-const accountStore = useAccount();
+const router = useRouter()
+const socketStore = useSocket();
 
-const { isActive } = storeToRefs(accountStore);
+const connectSocket = async () => {
+  await socketStore.connectSocket({ loading: true });
+};
 </script>
 
 <template>
@@ -15,7 +18,9 @@ const { isActive } = storeToRefs(accountStore);
       <h1 class="text-xl flex items-center mb-4 text-center">
         Siz hozirda faol emassiz, sizga buyurtmalar ko’rinmaydi.
       </h1>
-      <Button class="suit-theme w-full"
+      <Button
+        @click="connectSocket"
+        class="suit-theme w-full"
         ><Power class="mr-2" /> Faollikni yoqish</Button
       >
     </div>
