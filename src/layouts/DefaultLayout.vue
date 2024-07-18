@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { toast } from 'vue-sonner'
 import { useOriginCoords } from '@/stores/origin'
 import { onMounted } from 'vue'
 import { useMaps } from '@/stores/maps'
@@ -15,7 +14,9 @@ import { User } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import router from '@/router'
 import { useProfile } from '@/stores/profile'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const profileStore = useProfile()
 const mapsStore = useMaps()
 const originStore = useOriginCoords()
@@ -33,7 +34,6 @@ onMounted(async () => {
 		await originStore.getCoords()
 		await originStore.watchCoords()
 		await loadMap()
-		await profileStore.getProfile({ loading: true })
 	} catch (error: any) {
 		alert(`Err DefaultLayout (onMounted): ${JSON.stringify(error)}`)
 	}
