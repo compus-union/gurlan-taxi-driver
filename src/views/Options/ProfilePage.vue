@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useProfile } from '../../stores/profile'
-import { computed, ref, onBeforeMount } from 'vue'
+import { computed, ref, onBeforeMount, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, RefreshCcw, Star, Phone, Pencil, CheckCheck, Wallet } from 'lucide-vue-next'
@@ -19,9 +19,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import router from '@/router'
 import { Separator } from '@/components/ui/separator'
+import { vMaska } from 'maska/vue'
 
 const profileStore = useProfile()
-const { profile, fullnameSplitted } = storeToRefs(profileStore)
+const { profile, fullnameSplitted, currentCreditCard } = storeToRefs(profileStore)
 
 const goBack = async () => {
 	router.go(-1)
@@ -30,7 +31,7 @@ const goBack = async () => {
 const newProfileToUpdate = ref({
 	firstname: '',
 	lastname: '',
-	card: ""
+	card: '',
 })
 
 const buttonDisabled = computed(() => {
@@ -42,6 +43,14 @@ const buttonDisabled = computed(() => {
 })
 
 const saveCreditButtonDisabled = computed(() => {
+	if (profile.value?.card.length !== 19) {
+		return true
+	}
+
+	if (profile.value.card === currentCreditCard.value) {
+		return true
+	}
+
 	return false
 })
 
@@ -52,6 +61,16 @@ const updatePersonalInfo = async () => {
 			fullname: newProfileToUpdate.value.firstname + ' ' + newProfileToUpdate.value.lastname,
 		},
 	})
+}
+
+const updateCreditCard = async () => {
+	if (profile.value)
+		await profileStore.updateProfile({
+			loading: true,
+			profile: {
+				card: profile.value.card,
+			},
+		})
 }
 
 onBeforeMount(async () => {
@@ -167,13 +186,17 @@ onBeforeMount(async () => {
 				<div class="bottom w-full flex flex-col">
 					<div v-if="profile" class="form-group w-full flex flex-col">
 						<Input
-							v-model:model-value="newProfileToUpdate.card"
+							v-model:model-value="profile.card"
 							autocomplete="off"
 							class="w-full"
-							:placeholder="profile.phone[0]"
+							v-maska="'#### #### #### ####'"
+							:placeholder="!profile.card ? `Plastik kartangizni qo'shing` : profile.card"
 						/>
 					</div>
-					<Button :disabled="saveCreditButtonDisabled" class="self-end mt-4 suit-theme"
+					<Button
+						@click="updateCreditCard"
+						:disabled="saveCreditButtonDisabled"
+						class="self-end mt-4 suit-theme"
 						><CheckCheck class="w-5 h-5 mr-2" /> Saqlash</Button
 					>
 				</div>

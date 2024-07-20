@@ -43,6 +43,7 @@ interface Driver {
 export const useProfile = defineStore('profile-store', () => {
 	const status = ref<StatusDriver>()
 	const profile = ref<Driver>()
+	const currentCreditCard = ref('')
 
 	const fullnameSplitted = computed(() => {
 		const splittedFirstname = profile.value?.fullname.split(' ')[0]
@@ -122,6 +123,7 @@ export const useProfile = defineStore('profile-store', () => {
 			}
 
 			profile.value = response.data.profile
+			currentCreditCard.value = response.data.profile.card
 		} catch (error: any) {
 			toast(
 				error ||
@@ -174,6 +176,8 @@ export const useProfile = defineStore('profile-store', () => {
 			}
 
 			profile.value = response.data.profile
+			currentCreditCard.value = response.data.profile.card
+			await Preferences.set({ key: 'auth_token', value: response.data.token })
 			toast(response.data.msg)
 		} catch (error: any) {
 			console.log(error)
@@ -202,5 +206,6 @@ export const useProfile = defineStore('profile-store', () => {
 		profile,
 		fullnameSplitted,
 		updateProfile,
+		currentCreditCard
 	}
 })
