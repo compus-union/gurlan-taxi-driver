@@ -37,6 +37,8 @@ interface Driver {
 	car: object
 	totalEarnings: number
 	earnings: object[]
+	card: string
+	ridesLength: number
 }
 export const useProfile = defineStore('profile-store', () => {
 	const status = ref<StatusDriver>()
@@ -156,7 +158,7 @@ export const useProfile = defineStore('profile-store', () => {
 			}
 
 			const response = await driverInstance.put(`/update-profile/${oneId.value}`, {
-				driver: { fullname: `${payload.profile.firstname} ${payload.profile.lastname}` },
+				driver: { ...payload.profile },
 			})
 
 			alert(token.value)

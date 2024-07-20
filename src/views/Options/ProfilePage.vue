@@ -30,6 +30,7 @@ const goBack = async () => {
 const newProfileToUpdate = ref({
 	firstname: '',
 	lastname: '',
+	card: ""
 })
 
 const buttonDisabled = computed(() => {
@@ -40,18 +41,17 @@ const buttonDisabled = computed(() => {
 	return true
 })
 
-const savePhoneButtonDisabled = computed(() => {
-	if (profile.value) {
-		if (profile.value.phone[0].length !== 17) {
-			return true
-		}
-		return false
-	}
+const saveCreditButtonDisabled = computed(() => {
 	return false
 })
 
 const updatePersonalInfo = async () => {
-	await profileStore.updateProfile({ loading: true, profile: newProfileToUpdate.value })
+	await profileStore.updateProfile({
+		loading: true,
+		profile: {
+			fullname: newProfileToUpdate.value.firstname + ' ' + newProfileToUpdate.value.lastname,
+		},
+	})
 }
 
 onBeforeMount(async () => {
@@ -167,13 +167,13 @@ onBeforeMount(async () => {
 				<div class="bottom w-full flex flex-col">
 					<div v-if="profile" class="form-group w-full flex flex-col">
 						<Input
-							v-model:model-value="profile.phone[0]"
+							v-model:model-value="newProfileToUpdate.card"
 							autocomplete="off"
 							class="w-full"
 							:placeholder="profile.phone[0]"
 						/>
 					</div>
-					<Button :disabled="savePhoneButtonDisabled" class="self-end mt-4 suit-theme"
+					<Button :disabled="saveCreditButtonDisabled" class="self-end mt-4 suit-theme"
 						><CheckCheck class="w-5 h-5 mr-2" /> Saqlash</Button
 					>
 				</div>

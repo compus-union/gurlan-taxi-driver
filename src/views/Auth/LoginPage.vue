@@ -2,7 +2,7 @@
 import { computed, defineAsyncComponent, onBeforeMount, ref } from "vue";
 import { useAuth } from "@/stores/auth";
 import { Preferences } from "@capacitor/preferences";
-import { vMaska } from "maska";
+import { vMaska } from "maska/vue";
 import { vUppercase } from "@/directives/uppercase";
 import {
   ResponseStatus,
@@ -209,8 +209,7 @@ const action = async () => {
             type="text"
             required
             v-uppercase
-            v-maska
-            data-maska="@@#######"
+            v-maska="'@@#######'"
             placeholder="One Id"
           />
         </div>

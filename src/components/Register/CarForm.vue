@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from "@/stores/auth";
 import { computed, defineAsyncComponent } from "vue";
-import { vMaska } from "maska";
 
 const Card = defineAsyncComponent(() => {
   return import("@/components/ui/card/Card.vue");

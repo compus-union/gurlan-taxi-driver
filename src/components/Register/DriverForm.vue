@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from "@/stores/auth";
 import { computed, ref } from "vue";
-import { vMaska } from "maska";
+import { vMaska } from "maska/vue";
 import { MaskInputOptions } from "maska";
 import {
   Card,
@@ -81,8 +81,7 @@ const maskOptions = ref({
             id="phone"
             type="text"
             required
-            v-maska
-            data-maska="+998 ## ### ## ##"
+            v-maska="'+998 ## ### ## ##'"
             placeholder="+998"
           />
         </div>
