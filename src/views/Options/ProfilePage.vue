@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { useProfile } from '../../stores/profile'
-import { computed, ref, onBeforeMount, watch } from 'vue'
+import { computed, ref, onBeforeMount } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, RefreshCcw, Star, Phone, Pencil, CheckCheck, Wallet } from 'lucide-vue-next'
+import {
+	ArrowLeft,
+	RefreshCcw,
+	Star,
+	Pencil,
+	CheckCheck,
+	Wallet,
+	CreditCard,
+	List,
+	HandCoinsIcon
+} from 'lucide-vue-next'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
 	Dialog,
@@ -18,7 +28,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import router from '@/router'
-import { Separator } from '@/components/ui/separator'
 import { vMaska } from 'maska/vue'
 
 const profileStore = useProfile()
@@ -161,7 +170,7 @@ onBeforeMount(async () => {
 			</div>
 		</div>
 		<div class="middle">
-			<div class="account py-4 section flex justify-between items-center">
+			<div class="account py-4 section flex justify-between items-center border-b">
 				<div class="left mr-5">
 					<p class="title flex items-center font-bold text-xl mb-2">
 						<Wallet class="w-6 h-6 mr-2" /> Hisobingiz
@@ -176,11 +185,10 @@ onBeforeMount(async () => {
 					</h1>
 				</div>
 			</div>
-			<Separator />
-			<div class="phone py-4 section flex flex-col justify-between items-start">
+			<div class="card py-4 section flex flex-col justify-between items-start border-b">
 				<div class="top mr-5">
 					<p class="title flex items-center font-bold text-xl mb-2">
-						<Phone class="w-6 h-6 mr-2" /> Telefon raqamlaringiz
+						<CreditCard class="w-6 h-6 mr-2" /> Plastik karta
 					</p>
 				</div>
 				<div class="bottom w-full flex flex-col">
@@ -201,7 +209,27 @@ onBeforeMount(async () => {
 					>
 				</div>
 			</div>
-			<div class="divider w-full h-5 bg-gray-100"></div>
+			<div class="income py-4 section flex flex-col justify-between items-start">
+				<div class="top mr-5">
+					<p class="title flex items-center font-bold text-xl mb-2">
+						<HandCoinsIcon class="w-6 h-6 mr-2" /> Daromad
+					</p>
+				</div>
+				<div class="bottom">
+					<p>Bugungi daromad: <b>{{ profile?.earnings }} so'm</b></p>
+					<p>Umumiy daromad: <b>{{ profile?.totalEarnings }} so'm</b></p>
+				</div>
+			</div>
+			<div class="history py-4 section flex flex-col justify-between items-start border-t">
+				<div class="top mr-5">
+					<p class="title flex items-center font-bold text-xl mb-2">
+						<List class="w-6 h-6 mr-2" /> Tarix
+					</p>
+				</div>
+				<div class="bottom">
+					<p>Sizning jami <b>{{ profile?.ridesLength }}</b> buyurtmangiz yakunlangan!</p>
+				</div>
+			</div>
 		</div>
 	</div>
 </template>

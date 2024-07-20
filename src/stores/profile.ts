@@ -163,8 +163,6 @@ export const useProfile = defineStore('profile-store', () => {
 				driver: { ...payload.profile },
 			})
 
-			alert(token.value)
-
 			if (!response) {
 				toast('Internet bilan aloqa mavjud emas')
 				return
@@ -206,6 +204,6 @@ export const useProfile = defineStore('profile-store', () => {
 		profile,
 		fullnameSplitted,
 		updateProfile,
-		currentCreditCard
+		currentCreditCard,
 	}
 })
